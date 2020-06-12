@@ -1,3 +1,5 @@
+/* eslint-disable eol-last */
+
 import actions from './actions';
 import mutations from './mutations';
 
