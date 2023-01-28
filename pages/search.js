@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Meta from './components/meta';
 import { Text, Button } from '@nextui-org/react';
 import { useRecoilState } from 'recoil';
-import { playerState } from './states';
+import { playerState } from '../states/states';
 import IonIcon from '@reacticons/ionicons';
 
 const SearchPage = (props) => {

@@ -2,7 +2,7 @@ import Hls from 'hls.js';
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
 import { useRecoilState } from 'recoil';
-import { playerState } from '../states';
+import { playerState } from '../../states/states';
 import IonIcon from '@reacticons/ionicons';
 import { Button, Text, Spacer } from '@nextui-org/react';
 import { BottomSheet } from 'react-spring-bottom-sheet'
