@@ -14,8 +14,7 @@ export default async function handler(
       keyword: query,
       searchType: 'TRACK',
       sortType: 'ACCURACY',
-      size: '5',
-      page: '1',
+      size: '50'
     },
     validateStatus: () => true,
   });
