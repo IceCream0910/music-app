@@ -7,6 +7,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const query = req.query.q;
+  const size = req.query.size;
   const response = await axios({
     method: 'GET',
     url: 'https://www.music-flo.com/api/search/v2/search',
@@ -14,7 +15,7 @@ export default async function handler(
       keyword: query,
       searchType: 'TRACK',
       sortType: 'ACCURACY',
-      size: '50'
+      size: 100,
     },
     validateStatus: () => true,
   });

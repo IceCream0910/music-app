@@ -22,7 +22,7 @@ export default function Nav() {
                         </Grid>
                         <Grid>
                             <Link href="/search" className="clickable">
-                                <Search set={router.pathname === '/search' ? 'bold' : 'broken'} />
+                                <Search set={router.pathname.indexOf('/search') > -1  ? 'bold' : 'broken'} />
                             </Link>
                         </Grid>
                         <Grid>

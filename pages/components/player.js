@@ -34,11 +34,16 @@ const Player = () => {
     useEffect(() => {
         const audio = audioRef.current;
         if (!data || !audio) return;
-
-        const hls = new Hls();
-        hls.loadSource(`/api/stream/${data.id}`);
-        hls.attachMedia(audio);
-        handlePlay();
+        if (id) {
+            const hls = new Hls();
+            hls.loadSource(`/api/stream/${data.id}`);
+            hls.attachMedia(audio);
+            handlePlay();
+        } else { //이전 재생 곡 로딩
+            const hls = new Hls();
+            hls.loadSource(`/api/stream/${data.id}`);
+            hls.attachMedia(audio);
+        }
     }, [data]);
 
     const handlePlay = () => {

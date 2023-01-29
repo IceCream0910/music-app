@@ -2,15 +2,20 @@ import { useRouter } from 'next/router';
 import { useState, useCallback } from 'react';
 import { Input, Grid } from '@nextui-org/react';
 import IonIcon from '@reacticons/ionicons';
+import { debounce } from 'lodash';
 
 const SearchBox = ({ initial }) => {
   const router = useRouter();
   const [search, setSearch] = useState(initial || '');
 
-  const handleSubmit = () => {
-    if (!search) return;
-    router.push(`/search?q=${encodeURIComponent(search)}`);
-  };
+
+  const handleSubmit = useCallback(debounce((query) => {
+    if (!query) {
+      router.replace(`/search`);
+    } else {
+      router.replace(`/search?q=${encodeURIComponent(query)}`);
+    }
+  }, 700), []);
 
   return (
     <div >
@@ -20,13 +25,14 @@ const SearchBox = ({ initial }) => {
         contentRightStyling={false}
         placeholder="검색"
         width="100%"
-        onChange={(e) => setSearch(e.target.value)}
+        initialValue={initial || ''}
+        onChange={(e) => [setSearch(e.target.value), handleSubmit(e.target.value)]}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
-            handleSubmit();
+            handleSubmit(e.target.value);
           }
         }}
-        contentRight={<div className={'searchBtn'} onClick={handleSubmit}>
+        contentLeft={<div className={'searchBtn'}>
           <IonIcon className={'icon'} name="search-outline"></IonIcon>
         </div>}
       />

@@ -15,25 +15,11 @@ export default function App({ Component, pageProps }) {
   useEffect(() => {
     setTheme(createTheme({
       type: (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light',
-      theme: {
-        colors: {
-          primary: '#4ADE7B',
-          secondary: '#F9CB80',
-          error: '#FCC5D8',
-        },
-      }
     }));
 
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
       setTheme(createTheme({
         type: (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light',
-        theme: {
-          colors: {
-            primary: '#4ADE7B',
-            secondary: '#F9CB80',
-            error: '#FCC5D8',
-          },
-        }
       }))
     })
   }, [])
