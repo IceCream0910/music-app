@@ -6,7 +6,6 @@ import {Text, Link, Grid, Button, Spacer} from '@nextui-org/react';
 import {useRecoilState} from 'recoil';
 import {playerState, loadingState, currentSongIdState} from '../states/states';
 import IonIcon from '@reacticons/ionicons';
-import TrackItem from './components/trackItem';
 
 const SearchPage = (props) => {
     const [player, setPlayer] = useRecoilState(playerState);
