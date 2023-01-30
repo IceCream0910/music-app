@@ -128,9 +128,6 @@ const SearchPage = (props) => {
               ))}
             </div>
           </div>
-              ))}
-            </div>
-          </div>
         }
 
         {(q && currentTab == 1) &&
