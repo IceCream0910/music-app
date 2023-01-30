@@ -1,38 +1,42 @@
 import Hls from 'hls.js';
-import { useRouter } from 'next/router';
-import { useEffect, useRef, useState } from 'react';
-import { useRecoilState } from 'recoil';
-import { playerState, loadingState, currentSongIdState } from '../../states/states';
+import {useRouter} from 'next/router';
+import {useEffect, useRef, useState} from 'react';
+import {useRecoilState} from 'recoil';
+import {playerState, loadingState, currentSongIdState} from '../../states/states';
 import IonIcon from '@reacticons/ionicons';
-import { Button, Text, Spacer } from '@nextui-org/react';
-import { BottomSheet } from 'react-spring-bottom-sheet'
-import toast, { Toaster } from 'react-hot-toast';
+import {Button, Text, Spacer} from '@nextui-org/react';
+import {BottomSheet} from 'react-spring-bottom-sheet'
+import toast, {Toaster} from 'react-hot-toast';
 
-const Player = () => {
+export default function Player() {
     const router = useRouter();
     const [player, setPlayer] = useRecoilState(playerState);
     const [currentSongId, setCurrentSongId] = useRecoilState(currentSongIdState);
     const [loading, setLoading] = useRecoilState(loadingState);
     const [isPlaying, setIsPlaying] = useState(false);
     let id = currentSongId;
-
     const [data, setData] = useState(null);
-
     const audioRef = useRef(null);
 
     useEffect(() => {
         id = currentSongId;
-        console.log(id)
-        if (!id) {
-            const lastPlaySongId = localStorage.getItem('lastPlaySongId');
-            if (lastPlaySongId) {
-                id = lastPlaySongId;
-                setIsPlaying(false);
-                loadData();
-            } else { return; }
+        /*
+        const savedPlayer = localStorage.getItem('player');
+        const lastPlaySongId = localStorage.getItem('currentSongId');
+        if (savedPlayer && lastPlaySongId) {
+            setPlayer(savedPlayer.split(','));
+            setCurrentSongId(lastPlaySongId);
         }
-        localStorage.setItem('lastPlaySongId', id);
-        loadData();
+        if (lastPlaySongId) {
+            id = lastPlaySongId;
+            setIsPlaying(false);
+        }
+        localStorage.setItem('player', player);
+        localStorage.setItem('currentSongId', currentSongId);
+         */
+        if (id) {
+            loadData();
+        }
     }, [id]);
 
     useEffect(() => {
@@ -43,7 +47,7 @@ const Player = () => {
             hls.loadSource(`/api/stream/${data.id}`);
             hls.attachMedia(audio);
             handlePlay();
-        } else { //이전 재생 곡 로딩
+        } else if (!isPlaying) { //이전 재생 곡 로딩
             const hls = new Hls();
             hls.loadSource(`/api/stream/${data.id}`);
             hls.attachMedia(audio);
@@ -94,32 +98,30 @@ const Player = () => {
     };
 
     const handlePrev = () => {
-        const index = player.findIndex((item) => item.id === currentSongId);
+        const index = player.findIndex((item) => item === currentSongId);
+        console.log(player, index)
         if (index === 0) {
-            toast.error('이전 곡이 없어요', {
-                style: {
-                    borderRadius: '20px'
-                },
-            });
+            toast.error('처음 곡입니다.');
+            return;
         } else {
             setCurrentSongId(player[index - 1]);
         }
     };
 
     const handleNext = () => {
-        const index = player.findIndex((item) => item.id === currentSongId);
-        console.log(index, player.length)
-        if (index === player.length) {
-            toast.error('다음 곡이 없어요', {
-                style: {
-                    borderRadius: '20px'
-                },
-            });
+        const index = player.findIndex((item) => item === currentSongId);
+        console.log(player, index)
+        if (index === player.length - 1) {
+            toast.error('마지막 곡입니다.');
+            return;
         } else {
             setCurrentSongId(player[index + 1]);
         }
     };
 
+    const handleEnded = () => {
+        handleNext();
+    }
 
 
     //bottom sheet
@@ -127,171 +129,188 @@ const Player = () => {
 
     return (
         <div>
-            <audio style={{ display: 'none' }} onTimeUpdate={() => handleTimeUpdate()} ref={audioRef} controls></audio>
-            <BottomSheet open={isOpen} expandOnContentDrag={true} onDismiss={() => setIsOpen(false)} scrollLocking={true}>
-                <Button light auto onClick={() => setIsOpen(false)} style={{ fontSize: '20px' }}><IonIcon name="chevron-down-outline" /></Button>
+            <audio style={{display: 'none'}} onTimeUpdate={() => handleTimeUpdate()} ref={audioRef}
+                   onEnded={() => handleEnded()}
+                   controls></audio>
+            <BottomSheet open={isOpen} expandOnContentDrag={true} onDismiss={() => setIsOpen(false)}
+                         scrollLocking={true}>
+                <Button light auto onClick={() => setIsOpen(false)} style={{fontSize: '20px'}}><IonIcon
+                    name="chevron-down-outline"/></Button>
                 {data ? (
-                    <div style={{ padding: '20px' }}>
+                    <div style={{padding: '20px'}}>
                         <div className="imageContainer">
-                            <img className="foregroundImg" src={data.image} />
-                            <img className="backgroundImg" src={data.image} />
+                            <img className="foregroundImg" src={data.image}/>
+                            <img className="backgroundImg" src={data.image}/>
                         </div>
-                        <Spacer y={2} />
+                        <Spacer y={2}/>
                         <div><Text h3 weight="black">{data.title}</Text></div>
-                        <div style={{ opacity: 0.8, marginTop: '-10px' }}>{data.artist}</div>
-                        <Spacer y={1} />
-                        <input type="range" min="1" max="100" value={progress} className="progressbar" />
+                        <div style={{opacity: 0.8, marginTop: '-10px'}}>{data.artist}</div>
+                        <Spacer y={1}/>
+                        <input type="range" min="1" max="100" value={progress} className="progressbar"/>
                         <div className='controller'>
-                            <div className="clickable" onClick={() => handlePrev()}><IonIcon name="play-back" /></div>
-                            <div className="clickable" onClick={() => handleToggle()} style={{ fontSize: '45px' }}>
-                                {isPlaying ? <IonIcon name="pause" /> : <IonIcon name="play" />}
+                            <div className="clickable" onClick={() => handlePrev()}><IonIcon name="play-back"/>
                             </div>
-                            <div className="clickable" onClick={() => handleNext()}><IonIcon name="play-forward" /></div>
+                            <div className="clickable" onClick={() => handleToggle()} style={{fontSize: '45px'}}>
+                                {isPlaying ? <IonIcon name="pause"/> : <IonIcon name="play"/>}
+                            </div>
+                            <div className="clickable" onClick={() => handleNext()}><IonIcon name="play-forward"/>
+                            </div>
                         </div>
                     </div>
                 ) : (
                     <>재생중인 곡이 없어요</>
                 )}
                 <style jsx>{`
-                    .progressbar {
-                        width: 100%;
-                        outline:none;
-                        border-radius:20px;
-                    }
-                    .controller {
-                        display:flex;
-                        flex-direction:row;
-                        width:calc(100% - 40px);
-                        justify-content: space-evenly;
-                        align-items: center;
-                        position: absolute;
-                        bottom:50px;
-                        font-size:30px;
-                    }
-                    .imageContainer {
-                        position: relative;
-                        display:flex;
-                        align-items:center;
-                        justify-content:center;
-                        -webkit-user-drag: none;
-                    }
-                    .imageContainer .foregroundImg {
-                        cursor: pointer;
-                        position: relative;
-                        z-index: 2;
-                        pointer-events: none;
-                        -webkit-user-drag: none;
-                    }
-                    .imageContainer .backgroundImg {
-                        position: absolute;
-                        top: 5px;
-                        filter: blur(90px);
-                        z-index: 1;
-                        -webkit-user-drag: none;
-                    }
-                    img {
-                        width: 100%;
-                        border-radius:20px;
-                        -webkit-user-drag: none;
-                    }
-                    `}</style>
+                  .progressbar {
+                    width: 100%;
+                    outline: none;
+                    border-radius: 20px;
+                  }
+
+                  .controller {
+                    display: flex;
+                    flex-direction: row;
+                    width: calc(100% - 40px);
+                    justify-content: space-evenly;
+                    align-items: center;
+                    position: absolute;
+                    bottom: 50px;
+                    font-size: 30px;
+                  }
+
+                  .imageContainer {
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    -webkit-user-drag: none;
+                  }
+
+                  .imageContainer .foregroundImg {
+                    cursor: pointer;
+                    position: relative;
+                    z-index: 2;
+                    pointer-events: none;
+                    -webkit-user-drag: none;
+                  }
+
+                  .imageContainer .backgroundImg {
+                    position: absolute;
+                    top: 5px;
+                    filter: blur(90px);
+                    z-index: 1;
+                    -webkit-user-drag: none;
+                  }
+
+                  img {
+                    width: 100%;
+                    border-radius: 20px;
+                    -webkit-user-drag: none;
+                  }
+                `}</style>
             </BottomSheet>
             <div className="player-mini">
                 {data ? (
                     <div className="item"
-                        key={data.id}>
+                         key={data.id}>
                         <div className="imageContainer">
-                            <img className="foregroundImg" src={data.image} />
-                            <img className="backgroundImg" src={data.image} />
+                            <img className="foregroundImg" src={data.image}/>
+                            <img className="backgroundImg" src={data.image}/>
                         </div>
                         <div className="left"
-                            onClick={() => setIsOpen(true)}>
-                            <div style={{ fontWeight: 'bold', fontSize: '18px' }}>{data.title}</div>
-                            <div style={{ fontWeight: 'light', fontSize: '14px', opacity: 0.6 }}>{data.artist}</div>
+                             onClick={() => setIsOpen(true)}>
+                            <div style={{fontWeight: 'bold', fontSize: '18px'}}>{data.title}</div>
+                            <div style={{fontWeight: 'light', fontSize: '14px', opacity: 0.6}}>{data.artist}</div>
                         </div>
                         <div className="right">
                             <div className="clickable" onClick={() => handleToggle()}>
-                                {isPlaying ? <IonIcon name="pause" /> : <IonIcon name="play" />}
+                                {isPlaying ? <IonIcon name="pause"/> : <IonIcon name="play"/>}
                             </div>
-                            <div><IonIcon name="list" /></div>
+                            <div><IonIcon name="list"/></div>
                         </div>
                     </div>
                 ) : (
                     <>재생중인 곡이 없어요</>
                 )}
                 <style jsx>{`
-                    .player-mini {
-                        position: fixed;
-                        bottom: 65px;
-                        width:100%;
-                        display:flex;
-                        flex-direction:row;
-                        gap:20px;
-                        padding:10px 20px 10px 20px;
-                        background-color: var(--nextui-colors-backgroundAlpha);
-                        -webkit-backdrop-filter: blur(30px);
-                        backdrop-filter: blur(30px);
-                        z-index:999;
-                    }
+                  .player-mini {
+                    position: fixed;
+                    bottom: 65px;
+                    width: 100%;
+                    display: flex;
+                    flex-direction: row;
+                    gap: 20px;
+                    padding: 10px 20px 10px 20px;
+                    background-color: var(--nextui-colors-backgroundAlpha);
+                    -webkit-backdrop-filter: blur(30px);
+                    backdrop-filter: blur(30px);
+                    z-index: 999;
+                  }
 
-                    .item {
-                        display: flex;
-                        justify-content: space-between;
-                        flex-wrap: nowrap;
-                        width:100%;
-                    }
-                    .imageContainer {
-                        position: relative;
-                        width: max-content;
-                    }
-                    .imageContainer .foregroundImg {
-                        cursor: pointer;
-                        position: relative;
-                        z-index: 2;
-                        pointer-events: none;
-                    }
-                    .imageContainer .backgroundImg {
-                        position: absolute;
-                        top: 5px;
-                        left: 0;
-                        filter: blur(4px);
-                        z-index: 1;
-                    }
-                    .item img {
-                        width:50px;
-                        min-width:50px;
-                        border-radius:10px;
-                        -webkit-user-drag: none;
-                    }
-                    .item .left {
-                        display:flex;
-                        flex-direction: column;
-                        justify-content: center;
-                        flex-basis: 100%;
-                        margin-left:15px;
-                        margin-right:10px;
-                        line-height: 1.2;
-                        white-space: nowrap;
-                        text-overflow: ellipsis;
-                        overflow: hidden;
-                    }
-                    .item .left div {
-                        white-space: nowrap;
-                        text-overflow: ellipsis;
-                        overflow: hidden;
-                    }
-                    .item .right {
-                        display:flex;
-                        justify-content: center;
-                        align-items : center;
-                        gap:10px;
-                        font-size:22px;
-                    }
-                    `}</style>
+                  .item {
+                    display: flex;
+                    justify-content: space-between;
+                    flex-wrap: nowrap;
+                    width: 100%;
+                  }
+
+                  .imageContainer {
+                    position: relative;
+                    width: max-content;
+                  }
+
+                  .imageContainer .foregroundImg {
+                    cursor: pointer;
+                    position: relative;
+                    z-index: 2;
+                    pointer-events: none;
+                  }
+
+                  .imageContainer .backgroundImg {
+                    position: absolute;
+                    top: 5px;
+                    left: 0;
+                    filter: blur(4px);
+                    z-index: 1;
+                  }
+
+                  .item img {
+                    width: 50px;
+                    min-width: 50px;
+                    border-radius: 10px;
+                    -webkit-user-drag: none;
+                  }
+
+                  .item .left {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    flex-basis: 100%;
+                    margin-left: 15px;
+                    margin-right: 10px;
+                    line-height: 1.2;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    overflow: hidden;
+                  }
+
+                  .item .left div {
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    overflow: hidden;
+                  }
+
+                  .item .right {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    gap: 10px;
+                    font-size: 22px;
+                  }
+                `}</style>
             </div>
-        </div >
+            <Toaster/>
+        </div>
     )
 
 };
-
-export default Player;

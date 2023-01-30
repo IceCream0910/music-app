@@ -1,214 +1,301 @@
-import { useRouter } from 'next/router';
+import {useRouter} from 'next/router';
 import SearchBox from './components/searchBox';
-import { useEffect, useState } from 'react';
+import {useEffect, useState} from 'react';
 import Meta from './components/meta';
-import { Text, Link, Grid, Button, Spacer } from '@nextui-org/react';
-import { useRecoilState } from 'recoil';
-import { playerState, loadingState } from '../states/states';
+import {Text, Link, Grid, Button, Spacer} from '@nextui-org/react';
+import {useRecoilState} from 'recoil';
+import {playerState, loadingState, currentSongIdState} from '../states/states';
 import IonIcon from '@reacticons/ionicons';
 import TrackItem from './components/trackItem';
 
 const SearchPage = (props) => {
-  const [player, setPlayer] = useRecoilState(playerState);
-  const [loading, setLoading] = useRecoilState(loadingState);
+    const [player, setPlayer] = useRecoilState(playerState);
+    const [loading, setLoading] = useRecoilState(loadingState);
+    const [currentSongId, setCurrentSongId] = useRecoilState(currentSongIdState);
 
-  const router = useRouter();
-  let q = router.query.q;
 
-  const [trackData, setTrackData] = useState([]);
-  const [albumData, setAlbumData] = useState([]);
-  const [artistData, setArtistData] = useState([]);
+    const router = useRouter();
+    let q = router.query.q;
 
-  const [searchRank, setSearchRank] = useState([]);
-  const [currentTab, setCurrentTab] = useState(0); // 0: track, 1: album, 2: artist
+    const [trackData, setTrackData] = useState([]);
+    const [albumData, setAlbumData] = useState([]);
+    const [artistData, setArtistData] = useState([]);
 
-  useEffect(() => {
-    setLoading(true);
-    if (!q) {
-      loadRankData();
-    } else {
-      loadData();
+    const [searchRank, setSearchRank] = useState([]);
+    const [currentTab, setCurrentTab] = useState(0); // 0: track, 1: album, 2: artist
+
+    useEffect(() => {
+        setLoading(true);
+        if (!q) {
+            loadRankData();
+        } else {
+            loadData();
+        }
+    }, [q]);
+
+    const loadData = () => {
+        loadTrack();
+        loadAlbum();
+        loadArtist();
     }
-  }, [q]);
 
-  const loadData = () => {
-    loadTrack();
-    loadAlbum();
-    loadArtist();
-  }
+    const loadTrack = async () => {
+        const res = await fetch(`/api/searchTrack?q=${q}`);
+        const data = await res.json();
+        if (data.ok) {
+            setTrackData(data.data);
+        } else {
+            router.replace(`/search`);
+        }
+        setLoading(false);
+    };
 
-  const loadTrack = async () => {
-    const res = await fetch(`/api/searchTrack?q=${q}`);
-    const data = await res.json();
-    if (data.ok) {
-      setTrackData(data.data);
-    } else {
-      router.replace(`/search`);
-    }
-    setLoading(false);
-  };
+    const loadAlbum = async () => {
+        const res = await fetch(`/api/searchAlbum?q=${q}`);
+        const data = await res.json();
+        if (data.ok) {
+            setAlbumData(data.data);
+        }
+    };
 
-  const loadAlbum = async () => {
-    const res = await fetch(`/api/searchAlbum?q=${q}`);
-    const data = await res.json();
-    if (data.ok) {
-      setAlbumData(data.data);
-    }
-  };
+    const loadArtist = async () => {
+        const res = await fetch(`/api/searchArtist?q=${q}`);
+        const data = await res.json();
+        if (data.ok) {
+            setArtistData(data.data);
+        }
+    };
 
-  const loadArtist = async () => {
-    const res = await fetch(`/api/searchArtist?q=${q}`);
-    const data = await res.json();
-    if (data.ok) {
-      setArtistData(data.data);
-    }
-  };
+    const loadRankData = async () => {
+        const res = await fetch(`/api/searchRank`);
+        const data = await res.json();
+        if (data.ok) {
+            setSearchRank(data.data);
+        } else {
+            router.replace(`/search`);
+        }
+        setLoading(false);
+    };
 
-  const loadRankData = async () => {
-    const res = await fetch(`/api/searchRank`);
-    const data = await res.json();
-    if (data.ok) {
-      setSearchRank(data.data);
-    } else {
-      router.replace(`/search`);
-    }
-    setLoading(false);
-  };
-
-  const handleItemClick = (id) => {
-    setPlayer(id);
-  };
-
-  return (
-    <div className="app">
-      <Meta title={`검색 - ${q}`} />
-      <Text h3 weight="black">검색</Text>
-      <SearchBox initial={q} />
-      <div className="result-container">
-        {(!q && searchRank) && <Text h5 weight="light"><Spacer y={1} />🔥 사람들이 많이 검색하고 있어요</Text>}
-        {!q && (
-          searchRank.map((item) => (
-            <div
-              className="item"
-              onClick={() => [router.replace(`/search?q=${item.text}`)]}
-              style={{ opacity: 0.7 }}
-              key={item.rank}>
-              {item.text}
-            </div>
-          )))
+    const handleItemClick = (id) => {
+        if (player === null) {
+            setPlayer([id]);
+            setCurrentSongId(id);
+        } else {
+            setPlayer([...player, id]);
+            setCurrentSongId(id);
         }
 
+    };
 
-        {q &&
-          <Grid.Container gap={2} style={{ gap: '10px' }}>
-            <Button auto color="primary" flat={currentTab === 0 ? false : true} rounded onClick={() => setCurrentTab(0)}>곡</Button>
-            <Button auto color="primary" flat={currentTab === 1 ? false : true} rounded onClick={() => setCurrentTab(1)}>앨범</Button>
-            <Button auto color="primary" flat={currentTab === 2 ? false : true} rounded onClick={() => setCurrentTab(2)}>아티스트</Button>
-          </Grid.Container>
-        }
-        {(q && currentTab == 0) &&
-          <div>
+    return (
+        <div className="app">
+            <Meta title={`검색 - ${q}`}/>
+            <Text h3 weight="black">검색</Text>
+            <SearchBox initial={q}/>
             <div className="result-container">
-              {trackData.map((item) => (
-                  <div
-                      className="item track"
-                      key={item.id}>
-                    <div className="imageContainer">
-                      <img className="foregroundImg" src={item.image} />
-                      <img className="backgroundImg" src={item.image} />
+                {(!q && searchRank) && <Text h5 weight="light"><Spacer y={1}/>🔥 사람들이 많이 검색하고 있어요</Text>}
+                {!q && (
+                    searchRank.map((item) => (
+                        <div
+                            className="item"
+                            onClick={() => [router.replace(`/search?q=${item.text}`)]}
+                            style={{opacity: 0.7}}
+                            key={item.rank}>
+                            {item.text}
+                        </div>
+                    )))
+                }
+
+
+                {q &&
+                    <Grid.Container gap={2} style={{gap: '10px'}}>
+                        <Button auto color="primary" flat={currentTab === 0 ? false : true} rounded
+                                onClick={() => setCurrentTab(0)}>곡</Button>
+                        <Button auto color="primary" flat={currentTab === 1 ? false : true} rounded
+                                onClick={() => setCurrentTab(1)}>앨범</Button>
+                        <Button auto color="primary" flat={currentTab === 2 ? false : true} rounded
+                                onClick={() => setCurrentTab(2)}>아티스트</Button>
+                    </Grid.Container>
+                }
+                {(q && currentTab == 0) &&
+                    <div>
+                        <div className="result-container">
+                            {trackData.map((item) => (
+                                <div
+                                    className="item track"
+                                    key={item.id}>
+                                    <div className="imageContainer">
+                                        <img className="foregroundImg" src={item.image}/>
+                                        <img className="backgroundImg" src={item.image}/>
+                                    </div>
+                                    <div className="left">
+                                        <div style={{fontWeight: 'bold', fontSize: '18px'}}>{item.title}</div>
+                                        <div style={{
+                                            fontWeight: 'light',
+                                            fontSize: '14px',
+                                            opacity: 0.6
+                                        }}>{item.artist}—{item.album}</div>
+                                    </div>
+                                    <div className="right">
+                                        <div className="clickable" onClick={() => handleItemClick(item.id)}><IonIcon
+                                            name="play"/></div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                    <div className="left">
-                      <div style={{ fontWeight: 'bold', fontSize: '18px' }}>{item.title}</div>
-                      <div style={{ fontWeight: 'light', fontSize: '14px', opacity: 0.6 }}>{item.artist}—{item.album}</div>
+                }
+
+                {(q && currentTab == 1) &&
+                    <div>
+                        <Grid.Container gap={2} justify="space-between">
+                            {albumData.map((item) => (
+                                <Grid xs className="album"
+                                      onClick={() => router.push(`/album/${item.id}`)}
+                                      key={item.id} style={{flexDirection: 'column'}}>
+                                    <img style={{borderRadius: '20px', marginBottom: "10px"}} src={item.image}/>
+                                    <div className='info' style={{margin: 0}}>
+                                        <div style={{fontWeight: 'bold', fontSize: '18px'}}>{item.title}</div>
+                                        <div style={{
+                                            fontWeight: 'light',
+                                            fontSize: '14px',
+                                            opacity: 0.6
+                                        }}>{item.albumTypeStr} | {item.artist}</div>
+                                    </div>
+                                </Grid>
+                            ))}
+                        </Grid.Container>
                     </div>
-                    <div className="right">
-                      <div className="clickable" onClick={() => handleItemClick(item.id)}><IonIcon name="play" /></div>
+                }
+
+                {(q && currentTab == 2) &&
+                    <div>
+                        <Grid.Container gap={2} justify="space-between">
+                            {artistData.map((item) => (
+                                <Grid xs className="album"
+                                      key={item.id} style={{flexDirection: 'column'}}>
+                                    <img style={{borderRadius: '20px', marginBottom: "10px"}} src={item.image}/>
+                                    <div className='info' style={{margin: 0}}>
+                                        <div style={{
+                                            fontWeight: 'bold',
+                                            fontSize: '18px',
+                                            textAlign: 'center'
+                                        }}>{item.name}</div>
+                                    </div>
+                                </Grid>
+                            ))}
+                        </Grid.Container>
                     </div>
-                  </div>
-              ))}
+                }
             </div>
-          </div>
-        }
-
-        {(q && currentTab == 1) &&
-          <div>
-            <Grid.Container gap={2} justify="space-between">
-              {albumData.map((item) => (
-                <Grid xs className="album"
-                  onClick={() => router.push(`/album/${item.id}`)}
-                  key={item.id} style={{ flexDirection: 'column' }}>
-                  <img style={{ borderRadius: '20px', marginBottom: "10px" }} src={item.image} />
-                  <div className='info' style={{ margin: 0 }}>
-                    <div style={{ fontWeight: 'bold', fontSize: '18px' }}>{item.title}</div>
-                    <div style={{ fontWeight: 'light', fontSize: '14px', opacity: 0.6 }}>{item.albumTypeStr} | {item.artist}</div>
-                  </div>
-                </Grid>
-              ))}
-            </Grid.Container>
-          </div>
-        }
-
-        {(q && currentTab == 2) &&
-          <div>
-            <Grid.Container gap={2} justify="space-between">
-              {artistData.map((item) => (
-                <Grid xs className="album"
-                  key={item.id} style={{ flexDirection: 'column' }}>
-                  <img style={{ borderRadius: '20px', marginBottom: "10px" }} src={item.image} />
-                  <div className='info' style={{ margin: 0 }}>
-                    <div style={{ fontWeight: 'bold', fontSize: '18px', textAlign: 'center' }}>{item.name}</div>
-                  </div>
-                </Grid>
-              ))}
-            </Grid.Container>
-          </div>
-        }
-      </div>
 
 
-      <style jsx>{`
-        .result-container {
-          display:flex;
-          flex-direction: column;
-          gap:15px;
-          margin-top:20px;
-        }
-        .album img {
-          width:50%;
-          border-radius:20px;
-          -webkit-user-drag: none;
-        }
-        .artist img {
-          width:50%;
-          border-radius:50%;
-          -webkit-user-drag: none;
-        }
-        .item .left, .info {
-          display:flex;
-          flex-direction: column;
-          justify-content: center;
-          flex-basis: 100%;
-          margin-left:15px;
-          margin-right:10px;
-          line-height: 1.2;
-          white-space: nowrap;
-          text-overflow: ellipsis;
-          overflow: hidden;
-        }
-        .item .left div {
-          white-space: nowrap;
-          text-overflow: ellipsis;
-          overflow: hidden;
-        }
-        .item .right {
-          display:flex;
-          justify-content: center;
-          align-items : center;
-        }
-        `}
-      </style>
-    </div >
-  );
+            <style jsx>{`
+              .result-container {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+                margin-top: 20px;
+              }
+
+              .album img {
+                width: 50%;
+                border-radius: 20px;
+                -webkit-user-drag: none;
+              }
+
+              .artist img {
+                width: 50%;
+                border-radius: 50%;
+                -webkit-user-drag: none;
+              }
+
+              .item .left, .info {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                flex-basis: 100%;
+                margin-left: 15px;
+                margin-right: 10px;
+                line-height: 1.2;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+              }
+
+              .item .left div {
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+              }
+
+              .item .right {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+              }
+
+              .item {
+                display: flex;
+                justify-content: space-between;
+                flex-wrap: nowrap;
+              }
+
+              .imageContainer {
+                position: relative;
+                width: max-content;
+              }
+
+              .imageContainer .foregroundImg {
+                cursor: pointer;
+                position: relative;
+                z-index: 2;
+                pointer-events: none;
+              }
+
+              .imageContainer .backgroundImg {
+                position: absolute;
+                top: 5px;
+                left: 0;
+                filter: blur(4px);
+                z-index: 1;
+              }
+
+              .item.track img {
+                width: 50px;
+                min-width: 50px;
+                border-radius: 10px;
+                -webkit-user-drag: none;
+              }
+
+              .item .left {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                flex-basis: 100%;
+                margin-left: 15px;
+                margin-right: 10px;
+                line-height: 1.2;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+              }
+
+              .item .left div {
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+              }
+
+              .item .right {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+              }
+            `}</style>
+        </div>
+    );
 };
 
 export default SearchPage;
