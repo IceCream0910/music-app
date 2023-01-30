@@ -15,7 +15,7 @@ const SearchBox = ({ initial }) => {
     } else {
       router.replace(`/search?q=${encodeURIComponent(query)}`);
     }
-  }, 700), []);
+  }, 450), []);
 
   return (
     <div >

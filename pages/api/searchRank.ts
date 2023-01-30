@@ -6,7 +6,6 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const query = req.query.q;
   const response = await axios({
     method: 'GET',
     url: 'https://www.music-flo.com/api/search/v2/search/keyword',

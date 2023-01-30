@@ -3,7 +3,9 @@ import { createTheme, NextUIProvider } from "@nextui-org/react"
 import { useEffect, useState, createContext } from 'react';
 import Nav from './components/nav';
 import Player from './components/player';
+import Loader from './components/loader';
 import { RecoilRoot } from 'recoil';
+import { playerState, loadingState } from '../states/states';
 import '@/styles/player.css'
 
 export default function App({ Component, pageProps }) {
@@ -34,6 +36,7 @@ export default function App({ Component, pageProps }) {
         <Component {...pageProps} propFunction={updatePlayer} />
         <Player />
         <Nav />
+        <Loader state={loadingState} />
       </RecoilRoot>
     </NextUIProvider>
   );

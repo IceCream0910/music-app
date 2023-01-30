@@ -2,22 +2,27 @@ import Hls from 'hls.js';
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
 import { useRecoilState } from 'recoil';
-import { playerState } from '../../states/states';
+import { playerState, loadingState, currentSongIdState } from '../../states/states';
 import IonIcon from '@reacticons/ionicons';
 import { Button, Text, Spacer } from '@nextui-org/react';
 import { BottomSheet } from 'react-spring-bottom-sheet'
+import toast, { Toaster } from 'react-hot-toast';
 
 const Player = () => {
     const router = useRouter();
     const [player, setPlayer] = useRecoilState(playerState);
+    const [currentSongId, setCurrentSongId] = useRecoilState(currentSongIdState);
+    const [loading, setLoading] = useRecoilState(loadingState);
     const [isPlaying, setIsPlaying] = useState(false);
-    let id = player;
+    let id = currentSongId;
 
     const [data, setData] = useState(null);
 
     const audioRef = useRef(null);
 
     useEffect(() => {
+        id = currentSongId;
+        console.log(id)
         if (!id) {
             const lastPlaySongId = localStorage.getItem('lastPlaySongId');
             if (lastPlaySongId) {
@@ -25,7 +30,6 @@ const Player = () => {
                 setIsPlaying(false);
                 loadData();
             } else { return; }
-
         }
         localStorage.setItem('lastPlaySongId', id);
         loadData();
@@ -78,6 +82,7 @@ const Player = () => {
     };
 
     const loadData = async () => {
+        setLoading(true);
         const res = await fetch(`/api/music?id=${id}`);
         const data = await res.json();
         if (data.ok) {
@@ -85,7 +90,36 @@ const Player = () => {
         } else {
             alert(data.message || '오류가 발생했어요');
         }
+        setLoading(false);
     };
+
+    const handlePrev = () => {
+        const index = player.findIndex((item) => item.id === currentSongId);
+        if (index === 0) {
+            toast.error('이전 곡이 없어요', {
+                style: {
+                    borderRadius: '20px'
+                },
+            });
+        } else {
+            setCurrentSongId(player[index - 1]);
+        }
+    };
+
+    const handleNext = () => {
+        const index = player.findIndex((item) => item.id === currentSongId);
+        console.log(index, player.length)
+        if (index === player.length) {
+            toast.error('다음 곡이 없어요', {
+                style: {
+                    borderRadius: '20px'
+                },
+            });
+        } else {
+            setCurrentSongId(player[index + 1]);
+        }
+    };
+
 
 
     //bottom sheet
@@ -108,11 +142,11 @@ const Player = () => {
                         <Spacer y={1} />
                         <input type="range" min="1" max="100" value={progress} className="progressbar" />
                         <div className='controller'>
-                            <div className="clickable"><IonIcon name="play-back" /></div>
+                            <div className="clickable" onClick={() => handlePrev()}><IonIcon name="play-back" /></div>
                             <div className="clickable" onClick={() => handleToggle()} style={{ fontSize: '45px' }}>
                                 {isPlaying ? <IonIcon name="pause" /> : <IonIcon name="play" />}
                             </div>
-                            <div className="clickable"><IonIcon name="play-forward" /></div>
+                            <div className="clickable" onClick={() => handleNext()}><IonIcon name="play-forward" /></div>
                         </div>
                     </div>
                 ) : (
@@ -255,7 +289,7 @@ const Player = () => {
                     }
                     `}</style>
             </div>
-        </div>
+        </div >
     )
 
 };
