@@ -1,6 +1,7 @@
 import {useEffect, useRef, useState} from 'react';
 
 export default function Lyrics({lyrics, time, background}) {
+    if (!lyrics) return null;
     const lyricsArray = lyrics.split('\n');
     const lyricsArray2 = lyricsArray.map((lyric) => {
         const time = lyric.slice(1, 9);
