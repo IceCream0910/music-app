@@ -20,7 +20,7 @@
 
 [data-rsbs-is-blocking='false'] [data-rsbs-overlay] {
     box-shadow: 0 -5px 60px 0 rgba(38, 89, 115, 0.11),
-        0 -1px 0 rgba(38, 89, 115, 0.05);
+    0 -1px 0 rgba(38, 89, 115, 0.05);
 }
 
 [data-rsbs-overlay],
@@ -158,23 +158,23 @@
 
 [data-rsbs-footer] {
     box-shadow: 0 -1px 0 rgba(46, 59, 66, calc(1 * 0.125)),
-        0 2px 0 #fff;
+    0 2px 0 #fff;
     box-shadow: 0 -1px 0 rgba(46, 59, 66, calc(var(--rsbs-content-opacity, 1) * 0.125)),
-        0 2px 0 var(--rsbs-bg, #fff);
+    0 2px 0 var(--rsbs-bg, #fff);
     overflow: hidden;
     z-index: 1;
     padding-bottom: calc(16px + env(safe-area-inset-bottom));
 }
 
-[data-rsbs-is-dismissable='true'] [data-rsbs-header]>*,
-[data-rsbs-is-dismissable='true'] [data-rsbs-scroll]>*,
-[data-rsbs-is-dismissable='true'] [data-rsbs-footer]>*,
-[data-rsbs-is-dismissable='false'][data-rsbs-state='opening'] [data-rsbs-header]>*,
-[data-rsbs-is-dismissable='false'][data-rsbs-state='closing'] [data-rsbs-header]>*,
-[data-rsbs-is-dismissable='false'][data-rsbs-state='opening'] [data-rsbs-scroll]>*,
-[data-rsbs-is-dismissable='false'][data-rsbs-state='closing'] [data-rsbs-scroll]>*,
-[data-rsbs-is-dismissable='false'][data-rsbs-state='opening'] [data-rsbs-footer]>*,
-[data-rsbs-is-dismissable='false'][data-rsbs-state='closing'] [data-rsbs-footer]>* {
+[data-rsbs-is-dismissable='true'] [data-rsbs-header] > *,
+[data-rsbs-is-dismissable='true'] [data-rsbs-scroll] > *,
+[data-rsbs-is-dismissable='true'] [data-rsbs-footer] > *,
+[data-rsbs-is-dismissable='false'][data-rsbs-state='opening'] [data-rsbs-header] > *,
+[data-rsbs-is-dismissable='false'][data-rsbs-state='closing'] [data-rsbs-header] > *,
+[data-rsbs-is-dismissable='false'][data-rsbs-state='opening'] [data-rsbs-scroll] > *,
+[data-rsbs-is-dismissable='false'][data-rsbs-state='closing'] [data-rsbs-scroll] > *,
+[data-rsbs-is-dismissable='false'][data-rsbs-state='opening'] [data-rsbs-footer] > *,
+[data-rsbs-is-dismissable='false'][data-rsbs-state='closing'] [data-rsbs-footer] > * {
     opacity: 1;
     opacity: var(--rsbs-content-opacity, 1);
 }
@@ -190,4 +190,85 @@
 [data-rsbs-state='closing'] {
     /* Allows interactions on the rest of the page before the close transition is finished */
     pointer-events: none;
+}
+
+input[type="range"] {
+    margin: auto;
+    -webkit-appearance: none;
+    position: relative;
+    overflow: hidden;
+    height: 10px;
+    width: 100%;
+    cursor: pointer;
+    border-radius: 20px;
+    -webkit-transition: .5s;
+    -moz-transition: .5s;
+    -o-transition: .5s;
+    transition: .5s;
+}
+
+input[type="range"]:active {
+    cursor: grabbing;
+    height: 20px;
+}
+
+::-webkit-slider-runnable-track {
+    background: var(--nextui-colors-neutralLightHover);
+}
+
+/*
+ * 1. Set to 0 width and remove border for a slider without a thumb
+ * 2. Shadow is negative the full width of the input and has a spread
+ *    of the width of the input.
+ */
+::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 0px; /* 1 */
+    height: 20px;
+    background: dodgerblue;
+    box-shadow: -200px 0 0 200px dodgerblue; /* 2 */
+}
+
+::-moz-range-track {
+    height: 20px;
+    background: var(--nextui-colors-neutralLightHover);
+}
+
+::-moz-range-thumb {
+    -moz-appearance: none;
+    height: 0;
+    width: 0;
+    box-shadow: -200px 0 0 200px dodgerblue;
+    box-sizing: border-box;
+}
+
+::-ms-fill-lower {
+    background: dodgerblue;
+}
+
+::-ms-thumb {
+    background: #fff;
+    border: 2px solid #999;
+    height: 20px;
+    width: 0px;
+    box-sizing: border-box;
+}
+
+::-ms-ticks-after {
+    display: none;
+}
+
+::-ms-ticks-before {
+    display: none;
+}
+
+::-ms-track {
+    background: var(--nextui-colors-neutralLightHover);
+    color: transparent;
+    height: 20px;
+    border: none;
+}
+
+::-ms-tooltip {
+    display: none;
 }

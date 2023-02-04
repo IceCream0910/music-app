@@ -7,6 +7,8 @@ import IonIcon from '@reacticons/ionicons';
 import {Button, Text, Spacer} from '@nextui-org/react';
 import {BottomSheet} from 'react-spring-bottom-sheet'
 import toast, {Toaster} from 'react-hot-toast';
+import Lyrics from "./lyrics";
+import Playlist from "./playlist";
 
 export default function Player() {
     const router = useRouter();
@@ -17,23 +19,11 @@ export default function Player() {
     let id = currentSongId;
     const [data, setData] = useState(null);
     const audioRef = useRef(null);
+    const [lyrics, setLyrics] = useState(null);
+    const [isLyricsMode, setIsLyricsMode] = useState(false);
 
     useEffect(() => {
         id = currentSongId;
-        /*
-        const savedPlayer = localStorage.getItem('player');
-        const lastPlaySongId = localStorage.getItem('currentSongId');
-        if (savedPlayer && lastPlaySongId) {
-            setPlayer(savedPlayer.split(','));
-            setCurrentSongId(lastPlaySongId);
-        }
-        if (lastPlaySongId) {
-            id = lastPlaySongId;
-            setIsPlaying(false);
-        }
-        localStorage.setItem('player', player);
-        localStorage.setItem('currentSongId', currentSongId);
-         */
         if (id) {
             loadData();
         }
@@ -78,12 +68,29 @@ export default function Player() {
     // audio progress bar
     const [progress, setProgress] = useState(0);
     const [duration, setDuration] = useState(0);
+    const [isSeeking, setIsSeeking] = useState(false);
 
     const handleTimeUpdate = () => {
+        if (isSeeking) return;
         const audio = audioRef.current;
-        setProgress((audio.currentTime / audio.duration) * 100);
         setDuration(audio.duration);
+        setProgress(audio.currentTime);
     };
+
+    const handleSeeking = (e) => {
+        setIsSeeking(true);
+        const audio = audioRef.current;
+        const {value} = e.target;
+        setProgress(value);
+    }
+
+    const handleSeekComplete = (e) => {
+        if (!isSeeking) return;
+        const audio = audioRef.current;
+        const {value} = e.target;
+        audio.currentTime = value;
+        setIsSeeking(false);
+    }
 
     const loadData = async () => {
         setLoading(true);
@@ -95,6 +102,13 @@ export default function Player() {
             alert(data.message || '오류가 발생했어요');
         }
         setLoading(false);
+        const lyricsRes = await fetch(`/api/lyric?id=${id}`);
+        const lyricsData = await lyricsRes.json();
+        if (lyricsData.ok) {
+            setLyrics(lyricsData.data);
+        } else {
+            alert(data.message || '오류가 발생했어요');
+        }
     };
 
     const handlePrev = () => {
@@ -126,34 +140,48 @@ export default function Player() {
 
     //bottom sheet
     const [isOpen, setIsOpen] = useState(false);
+    const [isOpenPlaylist, setIsOpenPlaylist] = useState(false);
 
     return (
         <div>
             <audio style={{display: 'none'}} onTimeUpdate={() => handleTimeUpdate()} ref={audioRef}
                    onEnded={() => handleEnded()}
                    controls></audio>
+            <Playlist isOpen={isOpenPlaylist}/>
             <BottomSheet open={isOpen} expandOnContentDrag={true} onDismiss={() => setIsOpen(false)}
                          scrollLocking={true}>
-                <Button light auto onClick={() => setIsOpen(false)} style={{fontSize: '20px'}}><IonIcon
-                    name="chevron-down-outline"/></Button>
+                {isLyricsMode &&
+                    <Button light auto onClick={() => setIsLyricsMode(false)} style={{fontSize: '20px'}}><IonIcon
+                        name="close-outline"/></Button>
+                }
+                {!isLyricsMode &&
+                    <Button light auto onClick={() => setIsOpen(false)} style={{fontSize: '20px'}}><IonIcon
+                        name="chevron-down-outline"/></Button>}
+
                 {data ? (
                     <div style={{padding: '20px'}}>
-                        <div className="imageContainer">
+                        <div className="imageContainer" onClick={() => setIsLyricsMode(true)}>
                             <img className="foregroundImg" src={data.image}/>
                             <img className="backgroundImg" src={data.image}/>
                         </div>
+                        {(lyrics && isLyricsMode) &&
+                            <Lyrics lyrics={lyrics} time={progress} background={data.image}/>}
                         <Spacer y={2}/>
                         <div><Text h3 weight="black">{data.title}</Text></div>
                         <div style={{opacity: 0.8, marginTop: '-10px'}}>{data.artist}</div>
                         <Spacer y={1}/>
-                        <input type="range" min="1" max="100" value={progress} className="progressbar"/>
                         <div className='controller'>
-                            <div className="clickable" onClick={() => handlePrev()}><IonIcon name="play-back"/>
-                            </div>
-                            <div className="clickable" onClick={() => handleToggle()} style={{fontSize: '45px'}}>
-                                {isPlaying ? <IonIcon name="pause"/> : <IonIcon name="play"/>}
-                            </div>
-                            <div className="clickable" onClick={() => handleNext()}><IonIcon name="play-forward"/>
+                            <input type="range" max={duration} value={progress} className="progressbar"
+                                   onChange={(e) => handleSeeking(e)} onMouseOut={(e) => handleSeekComplete(e)}/>
+                            <Spacer y={1}/>
+                            <div className='controller-flex'>
+                                <div className="clickable" onClick={() => handlePrev()}><IonIcon name="play-back"/>
+                                </div>
+                                <div className="clickable" onClick={() => handleToggle()} style={{fontSize: '45px'}}>
+                                    {isPlaying ? <IonIcon name="pause"/> : <IonIcon name="play"/>}
+                                </div>
+                                <div className="clickable" onClick={() => handleNext()}><IonIcon name="play-forward"/>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -168,14 +196,18 @@ export default function Player() {
                   }
 
                   .controller {
-                    display: flex;
-                    flex-direction: row;
-                    width: calc(100% - 40px);
-                    justify-content: space-evenly;
-                    align-items: center;
                     position: absolute;
                     bottom: 50px;
                     font-size: 30px;
+                    z-index: 10;
+                    width: calc(100% - 40px);
+                  }
+
+                  .controller-flex {
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: space-evenly;
+                    align-items: center;
                   }
 
                   .imageContainer {
@@ -226,7 +258,7 @@ export default function Player() {
                             <div className="clickable" onClick={() => handleToggle()}>
                                 {isPlaying ? <IonIcon name="pause"/> : <IonIcon name="play"/>}
                             </div>
-                            <div><IonIcon name="list"/></div>
+                            <div onClick={() => setIsOpenPlaylist(true)}><IonIcon name="list"/></div>
                         </div>
                     </div>
                 ) : (

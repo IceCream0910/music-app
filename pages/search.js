@@ -81,6 +81,10 @@ const SearchPage = (props) => {
             setPlayer([id]);
             setCurrentSongId(id);
         } else {
+            if (player[player.length] === id) {
+                setCurrentSongId(id);
+                return;
+            }
             setPlayer([...player, id]);
             setCurrentSongId(id);
         }
