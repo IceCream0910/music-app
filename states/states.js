@@ -1,18 +1,23 @@
-import { atom } from 'recoil';
+import {atom} from 'recoil';
 
 const playerState = atom({
-  key: 'playerState',
-  default: [],
+    key: 'playerState',
+    default: [],
 });
 
 const currentSongIdState = atom({
-  key: 'currentSongIdState',
-  default: '',
+    key: 'currentSongIdState',
+    default: '',
 });
 
 const loadingState = atom({
-  key: 'loadingState',
-  default: false,
+    key: 'loadingState',
+    default: false,
 });
 
-export { playerState, loadingState, currentSongIdState };
+const isPlaylistOpenedState = atom({
+    key: 'isPlaylistOpenedState',
+    default: false,
+});
+
+export {playerState, loadingState, currentSongIdState, isPlaylistOpenedState};

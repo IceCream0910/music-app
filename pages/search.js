@@ -6,12 +6,13 @@ import {Text, Link, Grid, Button, Spacer} from '@nextui-org/react';
 import {useRecoilState} from 'recoil';
 import {playerState, loadingState, currentSongIdState} from '../states/states';
 import IonIcon from '@reacticons/ionicons';
+import {useLongPress} from 'use-long-press';
+import toast, {Toaster} from 'react-hot-toast';
 
 const SearchPage = (props) => {
     const [player, setPlayer] = useRecoilState(playerState);
     const [loading, setLoading] = useRecoilState(loadingState);
     const [currentSongId, setCurrentSongId] = useRecoilState(currentSongIdState);
-
 
     const router = useRouter();
     let q = router.query.q;
@@ -22,6 +23,9 @@ const SearchPage = (props) => {
 
     const [searchRank, setSearchRank] = useState([]);
     const [currentTab, setCurrentTab] = useState(0); // 0: track, 1: album, 2: artist
+
+    const [isLongPressed, setIsLongPressed] = useState(false);
+    const [selectedId, setSelectedId] = useState('');
 
     useEffect(() => {
         setLoading(true);
@@ -77,19 +81,27 @@ const SearchPage = (props) => {
     };
 
     const handleItemClick = (id) => {
-        if (player === null) {
-            setPlayer([id]);
-            setCurrentSongId(id);
-        } else {
-            if (player[player.length] === id) {
+        if (!isLongPressed) {
+            if (player === null) {
+                setPlayer([id]);
                 setCurrentSongId(id);
-                return;
+            } else {
+                if (player[player.length] === id) {
+                    setCurrentSongId(id);
+                    return;
+                }
+                setPlayer([...player, id]);
+                setCurrentSongId(id);
             }
-            setPlayer([...player, id]);
-            setCurrentSongId(id);
         }
-
+        setIsLongPressed(false);
     };
+
+    const bind = useLongPress(() => {
+        setIsLongPressed(true);
+        toast.success(`이 곡을 바로 다음에 재생할게요`);
+        setPlayer([...player, selectedId]);
+    });
 
     return (
         <div className="app">
@@ -127,12 +139,16 @@ const SearchPage = (props) => {
                             {trackData.map((item) => (
                                 <div
                                     className="item track"
-                                    key={item.id}>
-                                    <div className="imageContainer">
-                                        <img className="foregroundImg" src={item.image}/>
-                                        <img className="backgroundImg" src={item.image}/>
+                                    key={item.id}
+                                    onMouseOver={() => setSelectedId(item.id)}
+                                    onTouchStart={() => setSelectedId(item.id)}
+                                >
+                                    <div className="imageContainer"
+                                         onClick={() => handleItemClick(item.id)} {...bind(this)}>
+                                        <img className="foregroundImg" src={item.image} loading="lazy"/>
+                                        <img className="backgroundImg" src={item.image} loading="lazy"/>
                                     </div>
-                                    <div className="left">
+                                    <div className="left" onClick={() => handleItemClick(item.id)} {...bind(this)}>
                                         <div style={{fontWeight: 'bold', fontSize: '18px'}}>{item.title}</div>
                                         <div style={{
                                             fontWeight: 'light',
@@ -141,8 +157,7 @@ const SearchPage = (props) => {
                                         }}>{item.artist}—{item.album}</div>
                                     </div>
                                     <div className="right">
-                                        <div className="clickable" onClick={() => handleItemClick(item.id)}><IonIcon
-                                            name="play"/></div>
+                                        <div className="clickable"><IonIcon name="ellipsis-vertical"/></div>
                                     </div>
                                 </div>
                             ))}
@@ -157,7 +172,8 @@ const SearchPage = (props) => {
                                 <Grid xs className="album"
                                       onClick={() => router.push(`/album/${item.id}`)}
                                       key={item.id} style={{flexDirection: 'column'}}>
-                                    <img style={{borderRadius: '20px', marginBottom: "10px"}} src={item.image}/>
+                                    <img style={{borderRadius: '20px', marginBottom: "10px"}} src={item.image}
+                                         loading="lazy"/>
                                     <div className='info' style={{margin: 0}}>
                                         <div style={{fontWeight: 'bold', fontSize: '18px'}}>{item.title}</div>
                                         <div style={{
@@ -178,7 +194,8 @@ const SearchPage = (props) => {
                             {artistData.map((item) => (
                                 <Grid xs className="album"
                                       key={item.id} style={{flexDirection: 'column'}}>
-                                    <img style={{borderRadius: '20px', marginBottom: "10px"}} src={item.image}/>
+                                    <img style={{borderRadius: '20px', marginBottom: "10px"}} src={item.image}
+                                         loading="lazy"/>
                                     <div className='info' style={{margin: 0}}>
                                         <div style={{
                                             fontWeight: 'bold',
@@ -297,6 +314,7 @@ const SearchPage = (props) => {
                 align-items: center;
               }
             `}</style>
+            <Toaster/>
         </div>
     );
 };

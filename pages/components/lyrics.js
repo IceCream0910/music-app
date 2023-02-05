@@ -55,8 +55,9 @@ export default function Lyrics({lyrics, time, background}) {
                     padding: 0 20px;
                     overflow-y: scroll;
                     height: calc(100vh - 250px);
-                    line-height: 1.8;
-                    font-size: 20px;
+                    line-height: 2.2;
+                    font-size: 23px;
+                    font-weight: 900;
                   }
 
                   .lyrics-body > div {
@@ -68,13 +69,14 @@ export default function Lyrics({lyrics, time, background}) {
                   }
 
                   .inactive {
-                    opacity: 0.7;
-                    font-weight: 400;
+                    opacity: 0.5;
                   }
 
                   .active {
                     opacity: 1;
-                    font-weight: 600;
+                    line-height: 1.3;
+                    margin-top: 15px;
+                    margin-bottom: 15px;
                   }
                 `}
             </style>

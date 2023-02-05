@@ -151,6 +151,11 @@
     height: 100vh;
 }
 
+[data-rsbs-has-footer='true'] [data-rsbs-content] {
+    padding-bottom: env(safe-area-inset-bottom);
+    height: 50vh;
+}
+
 [data-rsbs-content] {
     /* The overflow hidden is to ensure any margin on child nodes are included when the resize observer is measuring the height */
     overflow: hidden;

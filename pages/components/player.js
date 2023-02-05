@@ -2,13 +2,12 @@ import Hls from 'hls.js';
 import {useRouter} from 'next/router';
 import {useEffect, useRef, useState} from 'react';
 import {useRecoilState} from 'recoil';
-import {playerState, loadingState, currentSongIdState} from '../../states/states';
+import {playerState, loadingState, currentSongIdState, isPlaylistOpenedState} from '../../states/states';
 import IonIcon from '@reacticons/ionicons';
 import {Button, Text, Spacer} from '@nextui-org/react';
 import {BottomSheet} from 'react-spring-bottom-sheet'
 import toast, {Toaster} from 'react-hot-toast';
 import Lyrics from "./lyrics";
-import Playlist from "./playlist";
 
 export default function Player() {
     const router = useRouter();
@@ -21,6 +20,7 @@ export default function Player() {
     const audioRef = useRef(null);
     const [lyrics, setLyrics] = useState(null);
     const [isLyricsMode, setIsLyricsMode] = useState(false);
+    const [isPlaylistOpened, setIsPlaylistOpened] = useRecoilState(isPlaylistOpenedState);
 
     useEffect(() => {
         id = currentSongId;
@@ -115,7 +115,7 @@ export default function Player() {
         const index = player.findIndex((item) => item === currentSongId);
         console.log(player, index)
         if (index === 0) {
-            toast.error('처음 곡입니다.');
+            //toast.error('처음 곡입니다.');
             return;
         } else {
             setCurrentSongId(player[index - 1]);
@@ -126,7 +126,7 @@ export default function Player() {
         const index = player.findIndex((item) => item === currentSongId);
         console.log(player, index)
         if (index === player.length - 1) {
-            toast.error('마지막 곡입니다.');
+            //toast.error('마지막 곡입니다.');
             return;
         } else {
             setCurrentSongId(player[index + 1]);
@@ -140,14 +140,12 @@ export default function Player() {
 
     //bottom sheet
     const [isOpen, setIsOpen] = useState(false);
-    const [isOpenPlaylist, setIsOpenPlaylist] = useState(false);
 
     return (
         <div>
             <audio style={{display: 'none'}} onTimeUpdate={() => handleTimeUpdate()} ref={audioRef}
                    onEnded={() => handleEnded()}
                    controls></audio>
-            <Playlist isOpen={isOpenPlaylist}/>
             <BottomSheet open={isOpen} expandOnContentDrag={true} onDismiss={() => setIsOpen(false)}
                          scrollLocking={true}>
                 {isLyricsMode &&
@@ -172,7 +170,8 @@ export default function Player() {
                         <Spacer y={1}/>
                         <div className='controller'>
                             <input type="range" max={duration} value={progress} className="progressbar"
-                                   onChange={(e) => handleSeeking(e)} onMouseOut={(e) => handleSeekComplete(e)}/>
+                                   onChange={(e) => handleSeeking(e)} onMouseOut={(e) => handleSeekComplete(e)}
+                                   onTouchEnd={(e) => handleSeekComplete(e)}/>
                             <Spacer y={1}/>
                             <div className='controller-flex'>
                                 <div className="clickable" onClick={() => handlePrev()}><IonIcon name="play-back"/>
@@ -245,7 +244,7 @@ export default function Player() {
                 {data ? (
                     <div className="item"
                          key={data.id}>
-                        <div className="imageContainer">
+                        <div className="imageContainer" onClick={() => setIsOpen(true)}>
                             <img className="foregroundImg" src={data.image}/>
                             <img className="backgroundImg" src={data.image}/>
                         </div>
@@ -258,7 +257,7 @@ export default function Player() {
                             <div className="clickable" onClick={() => handleToggle()}>
                                 {isPlaying ? <IonIcon name="pause"/> : <IonIcon name="play"/>}
                             </div>
-                            <div onClick={() => setIsOpenPlaylist(true)}><IonIcon name="list"/></div>
+                            <div onClick={() => setIsPlaylistOpened(true)}><IonIcon name="list"/></div>
                         </div>
                     </div>
                 ) : (
