@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from 'react';
+import {useEffect} from 'react';
 
 export default function Lyrics({lyrics, time, background}) {
     if (!lyrics) return null;
@@ -45,7 +45,7 @@ export default function Lyrics({lyrics, time, background}) {
                     left: 0;
                     width: 100%;
                     height: 100vh;
-                    background-color: var(--nextui-colors-backgroundAlpha);
+                    background-color: rgba(0, 0, 0, 0.2);
                     z-index: 9;
                     backdrop-filter: blur(50px);
                   }

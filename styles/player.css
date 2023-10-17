@@ -50,7 +50,7 @@
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
-    background: var(--nextui-colors-background);
+    background: #000;
     z-index: 999;
 }
 
@@ -140,6 +140,7 @@
     -ms-scroll-chaining: none;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
+    color: #fff !important;
 }
 
 [data-rsbs-scroll]:focus {
@@ -210,6 +211,8 @@ input[type="range"] {
     -moz-transition: .5s;
     -o-transition: .5s;
     transition: .5s;
+    outline: none;
+    border-radius: 20px;
 }
 
 input[type="range"]:active {
@@ -218,37 +221,33 @@ input[type="range"]:active {
 }
 
 ::-webkit-slider-runnable-track {
-    background: var(--nextui-colors-neutralLightHover);
+    background: rgba(255, 255, 255, 0.21);
+    backdrop-filter: blur(50px);
 }
 
-/*
- * 1. Set to 0 width and remove border for a slider without a thumb
- * 2. Shadow is negative the full width of the input and has a spread
- *    of the width of the input.
- */
 ::-webkit-slider-thumb {
     -webkit-appearance: none;
     width: 0px; /* 1 */
     height: 20px;
-    background: dodgerblue;
-    box-shadow: -200px 0 0 200px dodgerblue; /* 2 */
+    background: none;
+    box-shadow: -200px 0 0 200px #fff; /* 2 */
 }
 
 ::-moz-range-track {
     height: 20px;
-    background: var(--nextui-colors-neutralLightHover);
+    background: #fff;
 }
 
 ::-moz-range-thumb {
     -moz-appearance: none;
     height: 0;
     width: 0;
-    box-shadow: -200px 0 0 200px dodgerblue;
+    box-shadow: -200px 0 0 200px #fff;
     box-sizing: border-box;
 }
 
 ::-ms-fill-lower {
-    background: dodgerblue;
+    background: #fff;
 }
 
 ::-ms-thumb {
@@ -268,7 +267,7 @@ input[type="range"]:active {
 }
 
 ::-ms-track {
-    background: var(--nextui-colors-neutralLightHover);
+    background: #fff;
     color: transparent;
     height: 20px;
     border: none;

@@ -1,12 +1,11 @@
-import Hls from 'hls.js';
 import {useRouter} from 'next/router';
 import {useEffect, useRef, useState} from 'react';
 import {useRecoilState} from 'recoil';
-import {playerState, loadingState, currentSongIdState, isPlaylistOpenedState} from '../../states/states';
+import {currentSongIdState, isPlaylistOpenedState, loadingState, playerState} from '../../states/states';
 import IonIcon from '@reacticons/ionicons';
-import {Button, Text, Spacer} from '@nextui-org/react';
+import {Button, Spacer} from '@nextui-org/react';
 import {BottomSheet} from 'react-spring-bottom-sheet'
-import toast, {Toaster} from 'react-hot-toast';
+import {Toaster} from 'react-hot-toast';
 import Lyrics from "./lyrics";
 
 export default function Player() {
@@ -21,7 +20,10 @@ export default function Player() {
     const [lyrics, setLyrics] = useState(null);
     const [isLyricsMode, setIsLyricsMode] = useState(false);
     const [isPlaylistOpened, setIsPlaylistOpened] = useRecoilState(isPlaylistOpenedState);
+    const albumartRef = useRef(null);
+    const controllerRef = useRef(null);
 
+    let audio;
     useEffect(() => {
         id = currentSongId;
         if (id) {
@@ -29,27 +31,64 @@ export default function Player() {
         }
     }, [id]);
 
+
     useEffect(() => {
-        const audio = audioRef.current;
-        if (!data || !audio) return;
+        if (!data) return;
         if (id) {
-            const hls = new Hls();
-            hls.loadSource(`/api/stream/${data.id}`);
-            hls.attachMedia(audio);
-            handlePlay();
+            if (!data.title) return;
+            fetch(`/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`)
+                .then((res) => {
+                    return res.json(); //Promise 반환
+                })
+                .then((json) => {
+                    console.log(json); // 서버에서 주는 json데이터가 출력 됨
+                    audioRef.current.src = json.mp3Url;
+                    handlePlay();
+                });
         } else if (!isPlaying) { //이전 재생 곡 로딩
-            const hls = new Hls();
-            hls.loadSource(`/api/stream/${data.id}`);
-            hls.attachMedia(audio);
+            fetch(`/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`)
+                .then((res) => {
+                    return res.json(); //Promise 반환
+                })
+                .then((json) => {
+                    console.log(json); // 서버에서 주는 json데이터가 출력 됨
+                    audioRef.current = new Audio(json.mp3Url);
+                    handlePause();
+                });
         }
     }, [data]);
 
+
     const handlePlay = () => {
-        audioRef.current.play().catch((e) => {
+        const audio = audioRef.current;
+        console.log(audio.src);
+        audio.play().catch((e) => {
             console.log(e);
-            return;
+
+            // If play fails, retry every 5 seconds
+            const retryInterval = setInterval(() => {
+                loadAndPlayAudio(audio.src);
+            }, 6000);
+
+            // Stop retrying when audio plays successfully
+            audio.addEventListener('play', () => {
+                clearInterval(retryInterval);
+                setIsPlaying(true);
+            });
         });
-        setIsPlaying(true);
+    };
+
+    const loadAndPlayAudio = (url) => {
+        if (!data.title) return;
+        fetch(`/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`)
+            .then((res) => {
+                return res.json(); //Promise 반환
+            })
+            .then((json) => {
+                console.log(json); // 서버에서 주는 json데이터가 출력 됨
+                audioRef.current.src = json.mp3Url;
+                handlePlay();
+            });
     };
 
     const handlePause = () => {
@@ -157,41 +196,71 @@ export default function Player() {
                         name="chevron-down-outline"/></Button>}
 
                 {data ? (
-                    <div style={{padding: '20px'}}>
-                        <div className="imageContainer" onClick={() => setIsLyricsMode(true)}>
-                            <img className="foregroundImg" src={data.image}/>
-                            <img className="backgroundImg" src={data.image}/>
-                        </div>
+                    <>
+                        <img className="playerAlbumart" ref={albumartRef} src={data.image}
+                             onClick={() => setIsLyricsMode(true)}/>
                         {(lyrics && isLyricsMode) &&
                             <Lyrics lyrics={lyrics} time={progress} background={data.image}/>}
-                        <Spacer y={2}/>
-                        <div><Text h3 weight="black">{data.title}</Text></div>
-                        <div style={{opacity: 0.8, marginTop: '-10px'}}>{data.artist}</div>
-                        <Spacer y={1}/>
-                        <div className='controller'>
-                            <input type="range" max={duration} value={progress} className="progressbar"
-                                   onChange={(e) => handleSeeking(e)} onMouseOut={(e) => handleSeekComplete(e)}
-                                   onTouchEnd={(e) => handleSeekComplete(e)}/>
+                        <div className="blurredAlbumart"/>
+
+                        <div className={'player-content-wrap'}>
+                            <div className={'player-info'}>
+                                <div style={{
+                                    opacity: 0.99,
+                                    zIndex: 1,
+                                    fontSize: '25px',
+                                    fontWeight: 'bold'
+                                }}>{data.title}</div>
+                                <div style={{opacity: 0.8, zIndex: 1}}>{data.artist}</div>
+                            </div>
                             <Spacer y={1}/>
-                            <div className='controller-flex'>
-                                <div className="clickable" onClick={() => handlePrev()}><IonIcon name="play-back"/>
-                                </div>
-                                <div className="clickable" onClick={() => handleToggle()} style={{fontSize: '45px'}}>
-                                    {isPlaying ? <IonIcon name="pause"/> : <IonIcon name="play"/>}
-                                </div>
-                                <div className="clickable" onClick={() => handleNext()}><IonIcon name="play-forward"/>
+                            <div className='controller' ref={controllerRef}>
+                                <input type="range" max={duration} value={progress} className="progressbar"
+                                       onChange={(e) => handleSeeking(e)} onMouseOut={(e) => handleSeekComplete(e)}
+                                       onTouchEnd={(e) => handleSeekComplete(e)}/>
+                                <div className='controller-flex'>
+                                    <div className="clickable" onClick={() => handlePrev()}><IonIcon name="play-back"/>
+                                    </div>
+                                    <div className="clickable" onClick={() => handleToggle()}
+                                         style={{fontSize: '55px'}}>
+                                        {isPlaying ? <IonIcon name="pause"/> : <IonIcon name="play"/>}
+                                    </div>
+                                    <div className="clickable" onClick={() => handleNext()}><IonIcon
+                                        name="play-forward"/>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </>
                 ) : (
                     <>재생중인 곡이 없어요</>
                 )}
                 <style jsx>{`
-                  .progressbar {
-                    width: 100%;
-                    outline: none;
-                    border-radius: 20px;
+                  .player-content-wrap {
+                    margin-top: -10px;
+                    padding: 20px;
+                    height: calc(100vh - ${albumartRef.current ? albumartRef.current.clientHeight : 0}px) !important;
+                    background-color: transparent;
+                  }
+
+                  .player-info {
+                    position: absolute;
+                    bottom: ${controllerRef.current && controllerRef.current.clientHeight + 50}px;
+                  }
+
+                  .blurredAlbumart {
+                    background-image: url(${data && data.image});
+                    background-size: contain;
+                    position: absolute;
+                    bottom: 0;
+                    left: 0;
+                    width: 100dvw;
+                    height: calc(100vh - ${albumartRef.current && albumartRef.current.clientHeight + 'px' || '50vh'} + 30px);
+                    -webkit-user-drag: none;
+                    scale: 1.5;
+                    filter: blur(30px);
+                    z-index: 0;
+                    transition: transform 1s ease;
                   }
 
                   .controller {
@@ -209,35 +278,13 @@ export default function Player() {
                     align-items: center;
                   }
 
-                  .imageContainer {
-                    position: relative;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    -webkit-user-drag: none;
-                  }
-
-                  .imageContainer .foregroundImg {
-                    cursor: pointer;
-                    position: relative;
-                    z-index: 2;
-                    pointer-events: none;
-                    -webkit-user-drag: none;
-                  }
-
-                  .imageContainer .backgroundImg {
-                    position: absolute;
-                    top: 5px;
-                    filter: blur(90px);
-                    z-index: 1;
-                    -webkit-user-drag: none;
-                  }
-
-                  img {
+                  .playerAlbumart {
                     width: 100%;
-                    border-radius: 20px;
+                    margin-top: -40px;
                     -webkit-user-drag: none;
+                    cursor: pointer;
                   }
+
                 `}</style>
             </BottomSheet>
             <div className="player-mini">
