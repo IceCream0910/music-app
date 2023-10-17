@@ -36,23 +36,25 @@ export default function Player() {
         if (!data) return;
         if (id) {
             if (!data.title) return;
-            fetch(`/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`)
+            fetch(`/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`,
+                {cache: 'no-store'})
                 .then((res) => {
                     return res.json(); //Promise 반환
                 })
                 .then((json) => {
                     console.log(json); // 서버에서 주는 json데이터가 출력 됨
-                    audioRef.current.src = json.mp3Url;
+                    audioRef.current.src = json.mp3Url.replace('http://lt2.kr/m/module/fetch_song.php?song=', '/stream/');
                     handlePlay();
                 });
         } else if (!isPlaying) { //이전 재생 곡 로딩
-            fetch(`/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`)
+            fetch(`/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`,
+                {cache: 'no-store'})
                 .then((res) => {
                     return res.json(); //Promise 반환
                 })
                 .then((json) => {
                     console.log(json); // 서버에서 주는 json데이터가 출력 됨
-                    audioRef.current = new Audio(json.mp3Url);
+                    audioRef.current.src = json.mp3Url.replace('http://lt2.kr/m/module/fetch_song.php?song=', '/stream/');
                     handlePause();
                 });
         }
@@ -64,31 +66,26 @@ export default function Player() {
         console.log(audio.src);
         audio.play().catch((e) => {
             console.log(e);
-
-            // If play fails, retry every 5 seconds
-            const retryInterval = setInterval(() => {
-                loadAndPlayAudio(audio.src);
-                toast.error('곡 로딩에 실패했어요. 다시 시도할게요')
-            }, 6000);
-
-            // Stop retrying when audio plays successfully
-            audio.addEventListener('play', () => {
-                clearInterval(retryInterval);
-                setIsPlaying(true);
-            });
+            //loadAndPlayAudio(audio.src);
         });
+        setIsPlaying(true);
     };
 
     const loadAndPlayAudio = (url) => {
         if (!data.title) return;
-        fetch(`/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`)
+        fetch(`/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`,
+            {cache: 'no-store'})
             .then((res) => {
-                return res.json(); //Promise 반환
+                return res.json();
             })
             .then((json) => {
-                console.log(json); // 서버에서 주는 json데이터가 출력 됨
-                audioRef.current.src = json.mp3Url;
+                console.log(json);
+                audioRef.current.src = json.mp3Url.replace('http://lt2.kr/m/module/fetch_song.php?song=', '/stream/');
                 handlePlay();
+            })
+            .catch((e) => {
+                console.log(e);
+                toast.error('곡 로딩에 실패했어요. 다시 시도할게요');
             });
     };
 
