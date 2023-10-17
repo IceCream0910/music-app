@@ -1,6 +1,6 @@
 import {useEffect} from 'react';
 
-export default function Lyrics({lyrics, time, background}) {
+export default function Lyrics({lyrics, time, background, controllerRef}) {
     if (!lyrics) return null;
     const lyricsArray = lyrics.split('\n');
     const lyricsArray2 = lyricsArray.map((lyric) => {
@@ -54,7 +54,7 @@ export default function Lyrics({lyrics, time, background}) {
                     margin-top: 60px;
                     padding: 0 20px;
                     overflow-y: scroll;
-                    height: calc(100vh - 250px);
+                    height: calc(100dvh - ${controllerRef.current && controllerRef.current.clientHeight + 100 || 250}px);
                     line-height: 2.2;
                     font-size: 23px;
                     font-weight: 900;

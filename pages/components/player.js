@@ -36,25 +36,25 @@ export default function Player() {
         if (!data) return;
         if (id) {
             if (!data.title) return;
-            fetch(`/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`,
+            fetch(`/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '') + '?date=' + new Date().getTime()}`,
                 {cache: 'no-store'})
                 .then((res) => {
                     return res.json(); //Promise 반환
                 })
                 .then((json) => {
                     console.log(json); // 서버에서 주는 json데이터가 출력 됨
-                    audioRef.current.src = json.mp3Url.replace('http://lt2.kr/m/module/fetch_song.php?song=', '/stream/');
+                    audioRef.current.src = json.mp3Url.replace('http://lt2.kr/m/module/fetch_song.php?song=', '/stream/') + '?date=' + new Date().getTime();
                     handlePlay();
                 });
         } else if (!isPlaying) { //이전 재생 곡 로딩
-            fetch(`/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`,
+            fetch(`/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '') + '?date=' + new Date().getTime()}`,
                 {cache: 'no-store'})
                 .then((res) => {
                     return res.json(); //Promise 반환
                 })
                 .then((json) => {
                     console.log(json); // 서버에서 주는 json데이터가 출력 됨
-                    audioRef.current.src = json.mp3Url.replace('http://lt2.kr/m/module/fetch_song.php?song=', '/stream/');
+                    audioRef.current.src = json.mp3Url.replace('http://lt2.kr/m/module/fetch_song.php?song=', '/stream/') + '?date=' + new Date().getTime();
                     handlePause();
                 });
         }
@@ -66,21 +66,31 @@ export default function Player() {
         console.log(audio.src);
         audio.play().catch((e) => {
             console.log(e);
-            //loadAndPlayAudio(audio.src);
+
+            // If play fails, retry every 5 seconds
+            const retryInterval = setInterval(() => {
+                loadAndPlayAudio(audio.src);
+            }, 5000);
+
+            // Stop retrying when audio plays successfully
+            audio.addEventListener('play', () => {
+                clearInterval(retryInterval);
+                setIsPlaying(true);
+            });
         });
         setIsPlaying(true);
     };
 
     const loadAndPlayAudio = (url) => {
         if (!data.title) return;
-        fetch(`/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`,
+        fetch(`/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '') + '?date=' + new Date().getTime()}`,
             {cache: 'no-store'})
             .then((res) => {
                 return res.json();
             })
             .then((json) => {
                 console.log(json);
-                audioRef.current.src = json.mp3Url.replace('http://lt2.kr/m/module/fetch_song.php?song=', '/stream/');
+                audioRef.current.src = json.mp3Url.replace('http://lt2.kr/m/module/fetch_song.php?song=', '/stream/') + '?date=' + new Date().getTime();
                 handlePlay();
             })
             .catch((e) => {
@@ -198,7 +208,8 @@ export default function Player() {
                         <img className="playerAlbumart" ref={albumartRef} src={data.image}
                              onClick={() => setIsLyricsMode(true)}/>
                         {(lyrics && isLyricsMode) &&
-                            <Lyrics lyrics={lyrics} time={progress} background={data.image}/>}
+                            <Lyrics lyrics={lyrics} time={progress} background={data.image}
+                                    controllerRef={controllerRef}/>}
                         <div className="blurredAlbumart"/>
 
                         <div className={'player-content-wrap'}>
