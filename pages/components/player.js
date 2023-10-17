@@ -5,7 +5,7 @@ import {currentSongIdState, isPlaylistOpenedState, loadingState, playerState} fr
 import IonIcon from '@reacticons/ionicons';
 import {Button, Spacer} from '@nextui-org/react';
 import {BottomSheet} from 'react-spring-bottom-sheet'
-import {Toaster} from 'react-hot-toast';
+import toast, {Toaster} from 'react-hot-toast';
 import Lyrics from "./lyrics";
 
 export default function Player() {
@@ -68,6 +68,7 @@ export default function Player() {
             // If play fails, retry every 5 seconds
             const retryInterval = setInterval(() => {
                 loadAndPlayAudio(audio.src);
+                toast.error('곡 로딩에 실패했어요. 다시 시도할게요')
             }, 6000);
 
             // Stop retrying when audio plays successfully
