@@ -28,7 +28,7 @@ export default function Lyrics({lyrics, time, background, controllerRef}) {
                 {lyricsArray2.map((lyric, index) => {
                         return (
                             <div key={index} onClick={() => moveToLyricTime(lyric.seconds)}
-                                 className={(time >= lyric.seconds && time < lyricsArray2[index + 1].seconds) ? 'active' : 'inactive'}>
+                                 className={(time >= lyric.seconds && time <= lyricsArray2[index + 1].seconds) ? 'active' : 'inactive'}>
                                 {lyric.text}
                             </div>
                         );
@@ -57,26 +57,24 @@ export default function Lyrics({lyrics, time, background, controllerRef}) {
                     height: calc(100dvh - ${controllerRef.current && controllerRef.current.clientHeight + 100 || 250}px);
                     line-height: 2.2;
                     font-size: 23px;
-                    font-weight: 900;
+                    font-weight: 1000;
                   }
 
                   .lyrics-body > div {
                     width: fit-content;
-                    -webkit-transition: .2s;
-                    -moz-transition: .2s;
-                    -o-transition: .2s;
-                    transition: .2s;
+                    -webkit-transition: .5s;
+                    -moz-transition: .5s;
+                    -o-transition: .5s;
+                    transition: .5s;
                   }
 
                   .inactive {
-                    opacity: 0.5;
+                    opacity: 0.3;
                   }
 
                   .active {
                     opacity: 1;
-                    line-height: 1.3;
-                    margin-top: 15px;
-                    margin-bottom: 15px;
+                    font-size: 25px;
                   }
                 `}
             </style>

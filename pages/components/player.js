@@ -3,7 +3,7 @@ import {useEffect, useRef, useState} from 'react';
 import {useRecoilState} from 'recoil';
 import {currentSongIdState, isPlaylistOpenedState, loadingState, playerState} from '../../states/states';
 import IonIcon from '@reacticons/ionicons';
-import {Button, Spacer} from '@nextui-org/react';
+import {Button, Loading, Spacer} from '@nextui-org/react';
 import {BottomSheet} from 'react-spring-bottom-sheet'
 import toast, {Toaster} from 'react-hot-toast';
 import Lyrics from "./lyrics";
@@ -22,6 +22,7 @@ export default function Player() {
     const [isPlaylistOpened, setIsPlaylistOpened] = useRecoilState(isPlaylistOpenedState);
     const albumartRef = useRef(null);
     const controllerRef = useRef(null);
+    const [isBuffering, setIsBuffering] = useState(false);
 
     let audio;
     useEffect(() => {
@@ -64,21 +65,30 @@ export default function Player() {
     const handlePlay = () => {
         const audio = audioRef.current;
         console.log(audio.src);
+        setIsBuffering(true)
         audio.play().catch((e) => {
             console.log(e);
 
             // If play fails, retry every 5 seconds
             const retryInterval = setInterval(() => {
                 loadAndPlayAudio(audio.src);
-            }, 5000);
+            }, 2000);
 
-            // Stop retrying when audio plays successfully
             audio.addEventListener('play', () => {
                 clearInterval(retryInterval);
                 setIsPlaying(true);
             });
+
+            audio.addEventListener('playing', () => {
+                setIsBuffering(false);
+            });
+
+            audio.addEventListener('waiting', () => {
+                setIsBuffering(true);
+            });
         });
         setIsPlaying(true);
+        setIsBuffering(false);
     };
 
     const loadAndPlayAudio = (url) => {
@@ -162,7 +172,7 @@ export default function Player() {
         const index = player.findIndex((item) => item === currentSongId);
         console.log(player, index)
         if (index === 0) {
-            //toast.error('처음 곡입니다.');
+            toast('처음 곡입니다.');
             return;
         } else {
             setCurrentSongId(player[index - 1]);
@@ -173,7 +183,7 @@ export default function Player() {
         const index = player.findIndex((item) => item === currentSongId);
         console.log(player, index)
         if (index === player.length - 1) {
-            //toast.error('마지막 곡입니다.');
+            toast('마지막 곡입니다.');
             return;
         } else {
             setCurrentSongId(player[index + 1]);
@@ -191,7 +201,7 @@ export default function Player() {
     return (
         <div>
             <audio style={{display: 'none'}} onTimeUpdate={() => handleTimeUpdate()} ref={audioRef}
-                   onEnded={() => handleEnded()}
+                   onEnded={() => handleEnded()} preload={'auto'} crossOrigin={'anonymous'}
                    controls></audio>
             <BottomSheet open={isOpen} expandOnContentDrag={true} onDismiss={() => setIsOpen(false)}
                          scrollLocking={true}>
@@ -232,7 +242,9 @@ export default function Player() {
                                     </div>
                                     <div className="clickable" onClick={() => handleToggle()}
                                          style={{fontSize: '55px'}}>
-                                        {isPlaying ? <IonIcon name="pause"/> : <IonIcon name="play"/>}
+                                        {isBuffering ? <Loading color={'white'} size={'lg'}></Loading> : (isPlaying ?
+                                            <IonIcon name="pause"/> :
+                                            <IonIcon name="play"/>)}
                                     </div>
                                     <div className="clickable" onClick={() => handleNext()}><IonIcon
                                         name="play-forward"/>
@@ -264,12 +276,13 @@ export default function Player() {
                     bottom: 0;
                     left: 0;
                     width: 100dvw;
-                    height: calc(100vh - ${albumartRef.current && albumartRef.current.clientHeight + 'px' || '50vh'} + 30px);
+                    height: calc(100vh - ${albumartRef.current && albumartRef.current.clientHeight + 'px' || '50vh'} + 20px);
                     -webkit-user-drag: none;
                     scale: 1.5;
                     filter: blur(30px);
                     z-index: 0;
                     transition: transform 1s ease;
+                    transform: rotate(180deg);
                   }
 
                   .controller {
