@@ -1,20 +1,21 @@
 import '@/styles/globals.css';
 import {createTheme, NextUIProvider} from "@nextui-org/react"
-import {useEffect, useState, createContext} from 'react';
+import {useState} from 'react';
 import Nav from './components/nav';
 import Player from './components/player';
 import Loader from './components/loader';
 import {RecoilRoot} from 'recoil';
-import {playerState, loadingState} from '../states/states';
+import {loadingState} from '../states/states';
 import '@/styles/player.css'
 import Playlist from "./components/playlist";
 
 export default function App({Component, pageProps}) {
     const [songId, setSongId] = useState(null);
     const [theme, setTheme] = useState(createTheme({
-        type: 'light'
+        type: 'dark'
     }))
 
+    /*
     useEffect(() => {
         setTheme(createTheme({
             type: (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light',
@@ -26,6 +27,8 @@ export default function App({Component, pageProps}) {
             }))
         })
     }, [])
+
+     */
 
     const updatePlayer = (id) => {
         setSongId(id);

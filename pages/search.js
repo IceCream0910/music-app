@@ -2,9 +2,9 @@ import {useRouter} from 'next/router';
 import SearchBox from './components/searchBox';
 import {useEffect, useState} from 'react';
 import Meta from './components/meta';
-import {Text, Link, Grid, Button, Spacer} from '@nextui-org/react';
+import {Button, Grid, Spacer, Text} from '@nextui-org/react';
 import {useRecoilState} from 'recoil';
-import {playerState, loadingState, currentSongIdState} from '../states/states';
+import {currentSongIdState, loadingState, playerState} from '../states/states';
 import IonIcon from '@reacticons/ionicons';
 import {useLongPress} from 'use-long-press';
 import toast, {Toaster} from 'react-hot-toast';
@@ -166,46 +166,43 @@ const SearchPage = (props) => {
                 }
 
                 {(q && currentTab == 1) &&
-                    <div>
-                        <Grid.Container gap={2} justify="space-between">
-                            {albumData.map((item) => (
-                                <Grid xs className="album"
-                                      onClick={() => router.push(`/album/${item.id}`)}
-                                      key={item.id} style={{flexDirection: 'column'}}>
-                                    <img style={{borderRadius: '20px', marginBottom: "10px"}} src={item.image}
-                                         loading="lazy"/>
-                                    <div className='info' style={{margin: 0}}>
-                                        <div style={{fontWeight: 'bold', fontSize: '18px'}}>{item.title}</div>
-                                        <div style={{
-                                            fontWeight: 'light',
-                                            fontSize: '14px',
-                                            opacity: 0.6
-                                        }}>{item.albumTypeStr} | {item.artist}</div>
-                                    </div>
-                                </Grid>
-                            ))}
-                        </Grid.Container>
+                    <div className={'container-2x1'}>
+                        {albumData.map((item) => (
+                            <div className="album"
+                                 onClick={() => router.push(`/album/${item.id}`)}
+                                 key={item.id} style={{flexDirection: 'column'}}>
+                                <img style={{borderRadius: '20px', marginBottom: "10px"}} src={item.image}
+                                     loading="lazy"/>
+                                <div className='info' style={{margin: 0}}>
+                                    <div style={{fontWeight: 'bold', fontSize: '16px'}}>{item.title}</div>
+                                    <div style={{
+                                        fontWeight: 'light',
+                                        fontSize: '13px',
+                                        opacity: 0.6
+                                    }}>{item.artist}</div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 }
 
                 {(q && currentTab == 2) &&
-                    <div>
-                        <Grid.Container gap={2} justify="space-between">
-                            {artistData.map((item) => (
-                                <Grid xs className="album"
-                                      key={item.id} style={{flexDirection: 'column'}}>
-                                    <img style={{borderRadius: '20px', marginBottom: "10px"}} src={item.image}
-                                         loading="lazy"/>
-                                    <div className='info' style={{margin: 0}}>
-                                        <div style={{
-                                            fontWeight: 'bold',
-                                            fontSize: '18px',
-                                            textAlign: 'center'
-                                        }}>{item.name}</div>
-                                    </div>
-                                </Grid>
-                            ))}
-                        </Grid.Container>
+                    <div className={'container-3x1'}>
+                        {artistData.map((item) => (
+                            <div className="album"
+                                 key={item.id} style={{flexDirection: 'column'}}>
+                                <img className={'fixedSize'} style={{borderRadius: '20px', marginBottom: "10px"}}
+                                     src={item.image}
+                                     loading="lazy"/>
+                                <div className='info' style={{margin: 0}}>
+                                    <div style={{
+                                        fontWeight: 'bold',
+                                        fontSize: '18px',
+                                        textAlign: 'center'
+                                    }}>{item.name}</div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 }
             </div>
@@ -219,30 +216,6 @@ const SearchPage = (props) => {
                 margin-top: 20px;
               }
 
-              .album img {
-                width: 50%;
-                border-radius: 20px;
-                -webkit-user-drag: none;
-              }
-
-              .artist img {
-                width: 50%;
-                border-radius: 50%;
-                -webkit-user-drag: none;
-              }
-
-              .item .left, .info {
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                flex-basis: 100%;
-                margin-left: 15px;
-                margin-right: 10px;
-                line-height: 1.2;
-                white-space: nowrap;
-                text-overflow: ellipsis;
-                overflow: hidden;
-              }
 
               .item .left div {
                 white-space: nowrap;

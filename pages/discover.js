@@ -1,12 +1,11 @@
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
+import {useEffect, useState} from 'react';
+import {useRouter} from 'next/router';
 import Meta from './components/meta';
-import { Text, Link, Grid, Button, Spacer } from '@nextui-org/react';
-import { useRecoilState } from 'recoil';
-import { playerState, loadingState, currentSongIdState } from '../states/states';
+import {Text} from '@nextui-org/react';
+import {useRecoilState} from 'recoil';
+import {currentSongIdState, loadingState, playerState} from '../states/states';
 import IonIcon from '@reacticons/ionicons';
-import { useLongPress } from 'use-long-press';
-import toast, { Toaster } from 'react-hot-toast';
+import {Toaster} from 'react-hot-toast';
 
 const Discover = () => {
     const [player, setPlayer] = useRecoilState(playerState);
@@ -20,7 +19,6 @@ const Discover = () => {
     const [artistData, setArtistData] = useState([]);
 
     const [chart, setChart] = useState([]);
-    const [isLongPressed, setIsLongPressed] = useState(false);
     const [selectedId, setSelectedId] = useState('');
 
 
@@ -40,36 +38,25 @@ const Discover = () => {
 
 
     const handleItemClick = (id) => {
-        if (!isLongPressed) {
-            if (player === null) {
-                setPlayer([id]);
+        if (player === null) {
+            setPlayer([id]);
+            setCurrentSongId(id);
+        } else {
+            if (player[player.length] === id) {
                 setCurrentSongId(id);
-            } else {
-                if (player[player.length] === id) {
-                    setCurrentSongId(id);
-                    return;
-                }
-                setPlayer([...player, id]);
-                setCurrentSongId(id);
+                return;
             }
+            setPlayer([...player, id]);
+            setCurrentSongId(id);
         }
-        setIsLongPressed(false);
     };
 
-    const bind = useLongPress(() => {
-        setIsLongPressed(true);
-        toast.success(`이 곡을 바로 다음에 재생할게요`);
-        setPlayer([...player, selectedId]);
-    });
 
     return (
         <div className="app">
-            <Meta title="둘러보기" />
-            <Text h3 weight="black">둘러보기</Text>
-            <hr></hr>
-            <br></br>
+            <Meta title="차트"/>
+            <Text h3 weight="black">차트</Text>
 
-            <Text h4 weight="black">지금, TOP 100 🔥</Text>
             <div>
                 <div className="result-container">
                     {chart.map((item, index) => (
@@ -81,12 +68,12 @@ const Discover = () => {
                         >
                             <Text h3 weight="black" className='rankText'>{index + 1}</Text>
                             <div className="imageContainer"
-                                onClick={() => handleItemClick(item.id)} {...bind(this)}>
-                                <img className="foregroundImg" src={item.image} loading="lazy" />
-                                <img className="backgroundImg" src={item.image} loading="lazy" />
+                                 onClick={() => handleItemClick(item.id)}>
+                                <img className="foregroundImg" src={item.image} loading="lazy"/>
+                                <img className="backgroundImg" src={item.image} loading="lazy"/>
                             </div>
-                            <div className="left" onClick={() => handleItemClick(item.id)} {...bind(this)}>
-                                <div style={{ fontWeight: 'bold', fontSize: '18px' }}>{item.title}</div>
+                            <div className="left" onClick={() => handleItemClick(item.id)}>
+                                <div style={{fontWeight: 'bold', fontSize: '18px'}}>{item.title}</div>
                                 <div style={{
                                     fontWeight: 'light',
                                     fontSize: '14px',
@@ -94,7 +81,7 @@ const Discover = () => {
                                 }}>{item.artist}—{item.album}</div>
                             </div>
                             <div className="right">
-                                <div className="clickable"><IonIcon name="ellipsis-vertical" /></div>
+                                <div className="clickable"><IonIcon name="ellipsis-vertical"/></div>
                             </div>
                         </div>
                     ))}
@@ -210,7 +197,7 @@ const Discover = () => {
                 align-items: center;
               }
             `}</style>
-            <Toaster />
+            <Toaster/>
         </div>
     );
 };

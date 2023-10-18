@@ -44,3 +44,37 @@ a {
     text-decoration: none;
     color: inherit !important;
 }
+
+button span svg {
+    position: relative;
+    top: -10px;
+}
+
+.container-3x1 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-gap: 20px;
+}
+
+.container-2x1 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 30px;
+}
+
+.album {
+    display: flex;
+    flex-direction: column;
+}
+
+.album img {
+    max-width: 100%;
+    height: auto;
+}
+
+img.fixedSize {
+    width: 100%;
+    height: 130px;
+    object-fit: cover;
+    object-position: right top;
+}
