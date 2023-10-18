@@ -152,9 +152,20 @@ export default function Player() {
     const loadData = async () => {
         setLoading(true);
         const res = await fetch(`/api/music?id=${id}`);
-        const data = await res.json();
-        if (data.ok) {
-            setData(data.data);
+        const dataTemp = await res.json();
+        if (dataTemp.ok) {
+            //metadata 설정
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: dataTemp.data.title || '제목없음',
+                    artist: dataTemp.data.artist || '아티스트 없음',
+                    album: dataTemp.data.album || '앨범 없음',
+                    artwork: [
+                        {src: dataTemp.data.image || '/', sizes: '1000x1000', type: 'image/png'},
+                    ]
+                });
+            }
+            setData(dataTemp.data);
         } else {
             alert(data.message || '오류가 발생했어요');
         }
