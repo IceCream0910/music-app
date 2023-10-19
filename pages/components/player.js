@@ -36,10 +36,12 @@ export default function Player() {
         if (!data) return;
         if (id) {
             if (!data.title) return;
-            audioRef.current.src = `https://port-0-music-streaming-api-jvpb2alnx1h9k3.sel5.cloudtype.app/api/stream?id=${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`;
+            document.cookie = "HttpOnly; Secure; SameSite=None";
+            audioRef.current.src = `https://melong-stream.sungil.me/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`;
             handlePlay();
         } else if (!isPlaying) { //이전 재생 곡 로딩
-            audioRef.current.src = `https://port-0-music-streaming-api-jvpb2alnx1h9k3.sel5.cloudtype.app/api/stream?id=${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`;
+            document.cookie = "HttpOnly; Secure; SameSite=None";
+            audioRef.current.src = `https://melong-stream.sungil.me/api/stream?id=${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`;
             handlePause();
         }
     }, [data]);
