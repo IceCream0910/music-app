@@ -15,9 +15,14 @@ const loadingState = atom({
     default: false,
 });
 
-const isPlaylistOpenedState = atom({
-    key: 'isPlaylistOpenedState',
+const isInfoModalOpenedState = atom({
+    key: 'isInfoModalOpenedState',
     default: false,
 });
 
-export {playerState, loadingState, currentSongIdState, isPlaylistOpenedState};
+const infoModalDataState = atom({
+    key: 'infoModalDataState',
+    default: false,
+});
+
+export {playerState, loadingState, currentSongIdState, isInfoModalOpenedState, infoModalDataState};

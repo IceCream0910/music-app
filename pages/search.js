@@ -4,7 +4,13 @@ import {useEffect, useState} from 'react';
 import Meta from './components/meta';
 import {Button, Grid, Spacer, Text} from '@nextui-org/react';
 import {useRecoilState} from 'recoil';
-import {currentSongIdState, loadingState, playerState} from '../states/states';
+import {
+    currentSongIdState,
+    infoModalDataState,
+    isInfoModalOpenedState,
+    loadingState,
+    playerState
+} from '../states/states';
 import IonIcon from '@reacticons/ionicons';
 import {Toaster} from 'react-hot-toast';
 
@@ -25,6 +31,10 @@ const SearchPage = (props) => {
 
     const [isLongPressed, setIsLongPressed] = useState(false);
     const [selectedId, setSelectedId] = useState('');
+
+
+    const [infoModalData, setInfoModalData] = useRecoilState(infoModalDataState);
+    const [isInfoModalOpened, setIsInfoModalOpened] = useRecoilState(isInfoModalOpenedState);
 
     const savedTab = router.query.currentTab;
     performance.mark('beforeRender');
@@ -166,11 +176,11 @@ const SearchPage = (props) => {
                                     onTouchStart={() => setSelectedId(item.id)}
                                 >
                                     <div className="imageContainer"
-                                         onClick={() => handleItemClick(item.id)}>
+                                         onClick={() => handleItemClick(item)}>
                                         <img className="foregroundImg" src={item.image} loading="lazy"/>
                                         <img className="backgroundImg" src={item.image} loading="lazy"/>
                                     </div>
-                                    <div className="left" onClick={() => handleItemClick(item.id)}>
+                                    <div className="left" onClick={() => handleItemClick(item)}>
                                         <div style={{fontWeight: 'bold', fontSize: '18px'}}>{item.title}</div>
                                         <div style={{
                                             fontWeight: 'light',
@@ -178,7 +188,11 @@ const SearchPage = (props) => {
                                             opacity: 0.6
                                         }}>{item.artist}—{item.album}</div>
                                     </div>
-                                    <div className="right">
+                                    <div className="right"
+                                         onClick={() => {
+                                             setIsInfoModalOpened(true);
+                                             setInfoModalData(item);
+                                         }}>
                                         <div className="clickable"><IonIcon name="ellipsis-vertical"/></div>
                                     </div>
                                 </div>

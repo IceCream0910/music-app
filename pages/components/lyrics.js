@@ -74,7 +74,6 @@ export default function Lyrics({lyrics, time, background, controllerRef}) {
 
                   .active {
                     opacity: 1;
-                    font-size: 25px;
                   }
                 `}
             </style>

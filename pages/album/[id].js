@@ -3,7 +3,13 @@ import {useEffect, useState} from 'react';
 import Meta from '../components/meta';
 import {Button, Spacer, Text} from '@nextui-org/react';
 import {useRecoilState} from 'recoil';
-import {currentSongIdState, loadingState, playerState} from '../../states/states';
+import {
+    currentSongIdState,
+    infoModalDataState,
+    isInfoModalOpenedState,
+    loadingState,
+    playerState
+} from '../../states/states';
 import IonIcon from '@reacticons/ionicons';
 import {BottomSheet} from "react-spring-bottom-sheet";
 
@@ -18,6 +24,9 @@ export default function AlbumDetail() {
     const [loading, setLoading] = useRecoilState(loadingState);
 
     const [albumDescModalOpen, setAlbumDescModalOpen] = useState(false);
+
+    const [infoModalData, setInfoModalData] = useRecoilState(infoModalDataState);
+    const [isInfoModalOpened, setIsInfoModalOpened] = useRecoilState(isInfoModalOpenedState);
 
     useEffect(() => {
         setLoading(true);
@@ -45,9 +54,18 @@ export default function AlbumDetail() {
         }
     };
 
-    const handleItemClick = (id) => {
-        setPlayer([...player, id]);
-        setCurrentSongId(id);
+
+    const handleItemClick = (item) => {
+        if (currentSongId === item.id) {
+            setCurrentSongId(item.id);
+            return;
+        }
+        setPlayer([...player, {
+            id: item.id,
+            title: item.title,
+            artist: item.artist,
+        }]);
+        setCurrentSongId(item.id);
     };
 
     return (
@@ -95,7 +113,7 @@ export default function AlbumDetail() {
                             <div
                                 className="item track"
                                 key={item.id}>
-                                <div className="left">
+                                <div className="left" onClick={() => handleItemClick(item)}>
                                     <div style={{
                                         fontWeight: 'bold',
                                         fontSize: '18px',
@@ -110,9 +128,12 @@ export default function AlbumDetail() {
                                         opacity: 0.6
                                     }}>{item.artist}—{item.album}</div>
                                 </div>
-                                <div className="right">
-                                    <div className="clickable" onClick={() => handleItemClick(item.id)}><IonIcon
-                                        name="play"/></div>
+                                <div className="right"
+                                     onClick={() => {
+                                         setIsInfoModalOpened(true);
+                                         setInfoModalData(item);
+                                     }}>
+                                    <div className="clickable"><IonIcon name="ellipsis-vertical"/></div>
                                 </div>
                             </div>
                         ))}

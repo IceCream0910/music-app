@@ -11,7 +11,7 @@ const IndexPage = () => {
     const [loading, setLoading] = useRecoilState(loadingState);
     const [newestAlbums, setNewestAlbums] = useState([]);
     const [showMoreNewestAlbum, setShowMoreNewestAlbum] = useState(false);
-    const itemsToShow = 3;
+    const itemsToShow = 4;
     const moreAlbums = newestAlbums.slice(itemsToShow);
 
     useEffect(() => {
@@ -39,7 +39,7 @@ const IndexPage = () => {
             <br></br>
             <Text h4 weight="black">최근에 발매된 앨범</Text>
             <Spacer y={0.75}/>
-            <div className={'container-3x1'}>
+            <div className={'container-2x1'}>
                 {newestAlbums.slice(0, showMoreNewestAlbum ? newestAlbums.length : itemsToShow).map((item) => (
                     <div className="album"
                          onClick={() => router.push(`/album/${item.id}`)}

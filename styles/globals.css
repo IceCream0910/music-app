@@ -86,3 +86,30 @@ img.fixedSize {
     width: 100%;
     padding: 20px;
 }
+
+.dot {
+    width: 5px;
+    height: 5px;
+    background-color: #fff;
+    border-radius: 50%;
+    position: relative;
+    bottom: 0;
+    left: 10px;
+}
+
+.song-info-modal {
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.song-info-modal button {
+    background: transparent;
+    outline: none;
+    border: none;
+    box-shadow: none;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+    cursor: pointer;
+}

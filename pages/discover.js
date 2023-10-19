@@ -3,7 +3,13 @@ import {useRouter} from 'next/router';
 import Meta from './components/meta';
 import {Text} from '@nextui-org/react';
 import {useRecoilState} from 'recoil';
-import {currentSongIdState, loadingState, playerState} from '../states/states';
+import {
+    currentSongIdState,
+    infoModalDataState,
+    isInfoModalOpenedState,
+    loadingState,
+    playerState
+} from '../states/states';
 import IonIcon from '@reacticons/ionicons';
 import {Toaster} from 'react-hot-toast';
 
@@ -11,15 +17,13 @@ const Discover = () => {
     const [player, setPlayer] = useRecoilState(playerState);
     const [loading, setLoading] = useRecoilState(loadingState);
     const [currentSongId, setCurrentSongId] = useRecoilState(currentSongIdState);
+    const [selectedId, setSelectedId] = useState(null);
+
+    const [infoModalData, setInfoModalData] = useRecoilState(infoModalDataState);
+    const [isInfoModalOpened, setIsInfoModalOpened] = useRecoilState(isInfoModalOpenedState);
 
     const router = useRouter();
-
-    const [trackData, setTrackData] = useState([]);
-    const [albumData, setAlbumData] = useState([]);
-    const [artistData, setArtistData] = useState([]);
-
     const [chart, setChart] = useState([]);
-    const [selectedId, setSelectedId] = useState('');
 
 
     useEffect(() => {
@@ -37,18 +41,17 @@ const Discover = () => {
     };
 
 
-    const handleItemClick = (id) => {
-        if (player === null) {
-            setPlayer([id]);
-            setCurrentSongId(id);
-        } else {
-            if (player[player.length] === id) {
-                setCurrentSongId(id);
-                return;
-            }
-            setPlayer([...player, id]);
-            setCurrentSongId(id);
+    const handleItemClick = (item) => {
+        if (currentSongId === item.id) {
+            setCurrentSongId(item.id);
+            return;
         }
+        setPlayer([...player, {
+            id: item.id,
+            title: item.title,
+            artist: item.artist,
+        }]);
+        setCurrentSongId(item.id);
     };
 
 
@@ -59,7 +62,7 @@ const Discover = () => {
 
             <div>
                 <div className="result-container">
-                    {chart.map((item, index) => (
+                    {chart && chart.map((item, index) => (
                         <div
                             className="item track"
                             key={item.id}
@@ -68,11 +71,11 @@ const Discover = () => {
                         >
                             <Text h3 weight="black" className='rankText'>{index + 1}</Text>
                             <div className="imageContainer"
-                                 onClick={() => handleItemClick(item.id)}>
+                                 onClick={() => handleItemClick(item)}>
                                 <img className="foregroundImg" src={item.image} loading="lazy"/>
                                 <img className="backgroundImg" src={item.image} loading="lazy"/>
                             </div>
-                            <div className="left" onClick={() => handleItemClick(item.id)}>
+                            <div className="left" onClick={() => handleItemClick(item)}>
                                 <div style={{fontWeight: 'bold', fontSize: '18px'}}>{item.title}</div>
                                 <div style={{
                                     fontWeight: 'light',
@@ -80,7 +83,11 @@ const Discover = () => {
                                     opacity: 0.6
                                 }}>{item.artist}—{item.album}</div>
                             </div>
-                            <div className="right">
+                            <div className="right"
+                                 onClick={() => {
+                                     setIsInfoModalOpened(true);
+                                     setInfoModalData(item);
+                                 }}>
                                 <div className="clickable"><IonIcon name="ellipsis-vertical"/></div>
                             </div>
                         </div>

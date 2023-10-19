@@ -1,12 +1,13 @@
 import {useRouter} from 'next/router';
 import {useEffect, useRef, useState} from 'react';
 import {useRecoilState} from 'recoil';
-import {currentSongIdState, isPlaylistOpenedState, loadingState, playerState} from '../../states/states';
+import {currentSongIdState, loadingState, playerState} from '../../states/states';
 import IonIcon from '@reacticons/ionicons';
 import {Button, Loading, Spacer} from '@nextui-org/react';
 import {BottomSheet} from 'react-spring-bottom-sheet'
 import toast, {Toaster} from 'react-hot-toast';
 import Lyrics from "./lyrics";
+import Playlist from "./playlist";
 
 export default function Player() {
     const router = useRouter();
@@ -18,8 +19,6 @@ export default function Player() {
     const [data, setData] = useState(null);
     const audioRef = useRef(null);
     const [lyrics, setLyrics] = useState(null);
-    const [isLyricsMode, setIsLyricsMode] = useState(false);
-    const [isPlaylistOpened, setIsPlaylistOpened] = useRecoilState(isPlaylistOpenedState);
     const albumartRef = useRef(null);
     const controllerRef = useRef(null);
     const [isBuffering, setIsBuffering] = useState(false);
@@ -35,7 +34,6 @@ export default function Player() {
 
     useEffect(() => {
         if (!data) return;
-        /*
         if (id) {
             if (!data.title) return;
             audioRef.current.src = `/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`;
@@ -44,9 +42,11 @@ export default function Player() {
             audioRef.current.src = `/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`;
             handlePause();
         }
-
-         */
     }, [data]);
+
+    useEffect(() => {
+        console.log(player)
+    }, [player]);
 
 
     const handlePlay = () => {
@@ -143,24 +143,24 @@ export default function Player() {
     };
 
     const handlePrev = () => {
-        const index = player.findIndex((item) => item === currentSongId);
+        const index = player.findIndex((item) => item.id === currentSongId);
         console.log(player, index)
         if (index === 0) {
             toast('처음 곡입니다.');
             return;
         } else {
-            setCurrentSongId(player[index - 1]);
+            setCurrentSongId(player[index - 1].id);
         }
     };
 
     const handleNext = () => {
-        const index = player.findIndex((item) => item === currentSongId);
+        const index = player.findIndex((item) => item.id === currentSongId);
         console.log(player, index)
         if (index === player.length - 1) {
             toast('마지막 곡입니다.');
             return;
         } else {
-            setCurrentSongId(player[index + 1]);
+            setCurrentSongId(player[index + 1].id);
         }
     };
 
@@ -171,6 +171,7 @@ export default function Player() {
 
     //bottom sheet
     const [isOpen, setIsOpen] = useState(false);
+    const [currentTab, setCurrentTab] = useState('PLAYER');
 
     return (
         <div>
@@ -179,21 +180,17 @@ export default function Player() {
                    controls></audio>
             <BottomSheet open={isOpen} expandOnContentDrag={false} onDismiss={() => setIsOpen(false)}
                          scrollLocking={true}>
-                {isLyricsMode &&
-                    <Button light auto onClick={() => setIsLyricsMode(false)} style={{fontSize: '20px'}}><IonIcon
-                        name="close-outline"/></Button>
-                }
-                {!isLyricsMode &&
-                    <Button light auto onClick={() => setIsOpen(false)} style={{fontSize: '20px'}}><IonIcon
-                        name="chevron-down-outline"/></Button>}
+                <Button light auto onClick={() => setIsOpen(false)} style={{fontSize: '20px'}}><IonIcon
+                    name="chevron-down-outline"/></Button>
 
                 {data ? (
                     <>
-                        <img className="playerAlbumart" ref={albumartRef} src={data.image}
-                             onClick={() => setIsLyricsMode(true)}/>
-                        {(lyrics && isLyricsMode) &&
+                        <img className="playerAlbumart" ref={albumartRef} src={data.image}/>
+                        {(currentTab === 'LYRICS') &&
                             <Lyrics lyrics={lyrics} time={progress} background={data.image}
                                     controllerRef={controllerRef}/>}
+                        {(currentTab === 'PLAYLIST') &&
+                            <Playlist/>}
                         <div className="blurredAlbumart"/>
 
                         <div className={'player-content-wrap'}>
@@ -225,6 +222,24 @@ export default function Player() {
                                     </div>
                                     <div className="clickable" onClick={() => handleNext()}><IonIcon
                                         name="play-forward"/>
+                                    </div>
+                                </div>
+                                <Spacer y={1}/>
+                                <div className='controller-flex'
+                                     style={{fontSize: '25px'}}>
+                                    <div className="clickable" onClick={() => setCurrentTab('PLAYER')}><IonIcon
+                                        name={currentTab === 'PLAYER' ? "musical-notes" : "musical-notes-outline"}/>
+                                        {currentTab === 'PLAYER' && <div className='dot'/>}
+                                    </div>
+
+                                    <div className="clickable" onClick={() => setCurrentTab('LYRICS')}><IonIcon
+                                        name={currentTab === 'LYRICS' ? "chatbox-ellipses" : "chatbox-ellipses-outline"}/>
+                                        {currentTab === 'LYRICS' && <div className='dot'/>}
+                                    </div>
+
+                                    <div className="clickable" onClick={() => setCurrentTab('PLAYLIST')}><IonIcon
+                                        name={currentTab === 'PLAYLIST' ? "list" : "list-outline"}/>
+                                        {currentTab === 'PLAYLIST' && <div className='dot'/>}
                                     </div>
                                 </div>
                             </div>
@@ -273,7 +288,7 @@ export default function Player() {
                   .controller-flex {
                     display: flex;
                     flex-direction: row;
-                    justify-content: space-evenly;
+                    justify-content: space-around;
                     align-items: center;
                   }
 
@@ -303,7 +318,6 @@ export default function Player() {
                             <div className="clickable" onClick={() => handleToggle()}>
                                 {isPlaying ? <IonIcon name="pause"/> : <IonIcon name="play"/>}
                             </div>
-                            <div onClick={() => setIsPlaylistOpened(true)}><IonIcon name="list"/></div>
                         </div>
                     </div>
                 ) : (

@@ -57,8 +57,9 @@
 [data-rsbs-backdrop] {
     top: -60px;
     bottom: -60px;
-    background-color: rgba(0, 0, 0, 0.6);
-    background-color: var(--rsbs-backdrop-bg, rgba(0, 0, 0, 0.6));
+    background-color: rgba(121, 121, 121, 0.6);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
     will-change: opacity;
     cursor: pointer;
     opacity: 1;
@@ -154,7 +155,7 @@
 
 [data-rsbs-has-footer='true'] [data-rsbs-content] {
     padding-bottom: env(safe-area-inset-bottom);
-    height: 50vh;
+    height: fit-content;
 }
 
 [data-rsbs-content] {

@@ -7,7 +7,7 @@ import Loader from './components/loader';
 import {RecoilRoot} from 'recoil';
 import {loadingState} from '../states/states';
 import '@/styles/player.css'
-import Playlist from "./components/playlist";
+import SongInfoModal from "./components/songInfoModal";
 
 export default function App({Component, pageProps}) {
     const [songId, setSongId] = useState(null);
@@ -39,7 +39,7 @@ export default function App({Component, pageProps}) {
             <RecoilRoot>
                 <Component {...pageProps} propFunction={updatePlayer}/>
                 <Player/>
-                <Playlist/>
+                <SongInfoModal/>
                 <Nav/>
                 <Loader state={loadingState}/>
             </RecoilRoot>
