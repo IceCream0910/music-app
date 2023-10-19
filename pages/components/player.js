@@ -37,7 +37,7 @@ export default function Player() {
         if (id) {
             if (!data.title) return;
             document.cookie = "HttpOnly; Secure; SameSite=None";
-            audioRef.current.src = `https://melong-stream.sungil.me/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`;
+            audioRef.current.src = `https://melong-stream.sungil.me/api/stream?id=${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`;
             handlePlay();
         } else if (!isPlaying) { //이전 재생 곡 로딩
             document.cookie = "HttpOnly; Secure; SameSite=None";
