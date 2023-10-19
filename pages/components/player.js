@@ -36,10 +36,10 @@ export default function Player() {
         if (!data) return;
         if (id) {
             if (!data.title) return;
-            audioRef.current.src = `/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`;
+            audioRef.current.src = `https://port-0-music-streaming-api-jvpb2alnx1h9k3.sel5.cloudtype.app/api/stream?id=${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`;
             handlePlay();
         } else if (!isPlaying) { //이전 재생 곡 로딩
-            audioRef.current.src = `/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`;
+            audioRef.current.src = `https://port-0-music-streaming-api-jvpb2alnx1h9k3.sel5.cloudtype.app/api/stream?id=${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`;
             handlePause();
         }
     }, [data]);
@@ -175,14 +175,13 @@ export default function Player() {
 
     return (
         <div>
-            <audio style={{display: 'none'}} onTimeUpdate={() => handleTimeUpdate()} ref={audioRef}
+            <audio onTimeUpdate={() => handleTimeUpdate()} ref={audioRef}
                    onEnded={() => handleEnded()} preload={'auto'} crossOrigin={'anonymous'}
                    controls></audio>
             <BottomSheet open={isOpen} expandOnContentDrag={false} onDismiss={() => setIsOpen(false)}
                          scrollLocking={true}>
                 <Button light auto onClick={() => setIsOpen(false)} style={{fontSize: '20px'}}><IonIcon
                     name="chevron-down-outline"/></Button>
-
                 {data ? (
                     <>
                         <img className="playerAlbumart" ref={albumartRef} src={data.image}/>
