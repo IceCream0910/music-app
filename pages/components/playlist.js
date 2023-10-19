@@ -1,12 +1,10 @@
 import {useRouter} from 'next/router';
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {useRecoilState} from 'recoil';
-import {playerState, loadingState, currentSongIdState, isPlaylistOpenedState} from '../../states/states';
+import {currentSongIdState, isPlaylistOpenedState, loadingState, playerState} from '../../states/states';
 import IonIcon from '@reacticons/ionicons';
-import {Button, Text, Spacer} from '@nextui-org/react';
+import {Text} from '@nextui-org/react';
 import {BottomSheet} from 'react-spring-bottom-sheet'
-import toast, {Toaster} from 'react-hot-toast';
-import {useLongPress} from "use-long-press";
 
 export default function Playlist() {
     const router = useRouter();
@@ -23,11 +21,6 @@ export default function Playlist() {
         if (isPlaylistOpened) {
             setPlaylistData([]);
             setLoading(true);
-            player.forEach((id) => {
-                loadData(id).then((result) => {
-                    setPlaylistData((prev) => [...prev, result]);
-                });
-            })
             setLoading(false);
             setIsOpen(true);
         } else {
@@ -35,40 +28,23 @@ export default function Playlist() {
         }
     }, [isPlaylistOpened]);
 
-    const loadData = async (id) => {
-        const res = await fetch(`/api/music?id=${id}`);
-        const data = await res.json();
-        const result = {
-            id: data.data.id,
-            title: data.data.title,
-            artist: data.data.artist,
-        }
-        return result;
-    };
 
     const [isOpen, setIsOpen] = useState(false);
 
     const handleItemClick = (id) => {
-        if (!isLongPressed) {
-            if (player === null) {
-                setPlayer([id]);
+        if (player === null) {
+            setPlayer([id]);
+            setCurrentSongId(id);
+        } else {
+            if (player[player.length] === id) {
                 setCurrentSongId(id);
-            } else {
-                if (player[player.length] === id) {
-                    setCurrentSongId(id);
-                    return;
-                }
-                setPlayer([...player, id]);
-                setCurrentSongId(id);
+                return;
             }
+            setPlayer([...player, id]);
+            setCurrentSongId(id);
         }
-        setIsLongPressed(false);
     };
 
-    const bind = useLongPress(() => {
-        setIsLongPressed(true);
-        console.log('long pressed');
-    });
 
     return (
         <div>
@@ -79,10 +55,10 @@ export default function Playlist() {
                          footer={<></>}>
 
                 <div className={'bottomSheet'}>
-                    {playlistData.map((item, index) => (
+                    {playlistData && playlistData.map((item, index) => (
                         <div className="item track"
                              key={index}>
-                            <div className="left" onClick={() => handleItemClick(item.id)} {...bind(this)}>
+                            <div className="left" onClick={() => handleItemClick(item.id)}>
                                 <div style={{fontWeight: 'bold', fontSize: '18px'}}>{item.title}</div>
                                 <div style={{
                                     fontWeight: 'light',

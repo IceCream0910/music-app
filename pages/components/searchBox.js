@@ -1,6 +1,6 @@
 import {useRouter} from 'next/router';
-import {useState, useCallback, useRef} from 'react';
-import {Input, Grid} from '@nextui-org/react';
+import {useCallback, useState} from 'react';
+import {Input} from '@nextui-org/react';
 import IonIcon from '@reacticons/ionicons';
 import {debounce} from 'lodash';
 
@@ -58,7 +58,7 @@ const SearchBox = ({initial}) => {
                 <div className={'autocomplete'}>
                     {autocomplete.map((item, index) => (
                         <div key={index} className='item'
-                             onClick={() => router.push(`/search?q=${encodeURIComponent(item.text)}`)}>{item.text}</div>
+                             onClick={() => [router.push(`/search?q=${encodeURIComponent(item.text)}`), setSearch(item.text)]}>{item.text}</div>
                     ))}
                 </div>
             }

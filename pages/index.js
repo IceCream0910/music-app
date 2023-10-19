@@ -37,7 +37,7 @@ const IndexPage = () => {
             <Meta title="홈"/>
             <Text h3 weight="black">홈</Text>
             <br></br>
-            <Text h4 weight="black">오늘 발매된 앨범</Text>
+            <Text h4 weight="black">최근에 발매된 앨범</Text>
             <Spacer y={0.75}/>
             <div className={'container-3x1'}>
                 {newestAlbums.slice(0, showMoreNewestAlbum ? newestAlbums.length : itemsToShow).map((item) => (
@@ -61,7 +61,12 @@ const IndexPage = () => {
             {newestAlbums.length > itemsToShow && (
                 <div className="show-more-button"
                      style={{display: 'flex', justifyContent: 'center', marginTop: '20px'}}>
-                    <Button color="white" flat={true} rounded onClick={toggleShowMoreNewestAlbum}>
+                    <Button color="white" className={'icon-btn'} flat={true} rounded
+                            onClick={(e) => {
+                                setTimeout(() => {
+                                    toggleShowMoreNewestAlbum();
+                                }, 200);
+                            }}>
                         {showMoreNewestAlbum ? <><IonIcon name={'chevron-up'}/>&nbsp;&nbsp;접기</> : <><IonIcon
                             name={'chevron-down'}/>&nbsp;&nbsp;더보기</>}
                     </Button>

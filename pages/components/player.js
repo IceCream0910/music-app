@@ -35,30 +35,17 @@ export default function Player() {
 
     useEffect(() => {
         if (!data) return;
+        /*
         if (id) {
             if (!data.title) return;
-            fetch(`/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '') + '?date=' + new Date().getTime()}`,
-                {cache: 'no-store'})
-                .then((res) => {
-                    return res.json(); //Promise 반환
-                })
-                .then((json) => {
-                    console.log(json); // 서버에서 주는 json데이터가 출력 됨
-                    audioRef.current.src = json.mp3Url.replace('http://lt2.kr/m/module/fetch_song.php?song=', '/stream/') + '?date=' + new Date().getTime();
-                    handlePlay();
-                });
+            audioRef.current.src = `/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`;
+            handlePlay();
         } else if (!isPlaying) { //이전 재생 곡 로딩
-            fetch(`/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '') + '?date=' + new Date().getTime()}`,
-                {cache: 'no-store'})
-                .then((res) => {
-                    return res.json(); //Promise 반환
-                })
-                .then((json) => {
-                    console.log(json); // 서버에서 주는 json데이터가 출력 됨
-                    audioRef.current.src = json.mp3Url.replace('http://lt2.kr/m/module/fetch_song.php?song=', '/stream/') + '?date=' + new Date().getTime();
-                    handlePause();
-                });
+            audioRef.current.src = `/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '')}`;
+            handlePause();
         }
+
+         */
     }, [data]);
 
 
@@ -69,13 +56,7 @@ export default function Player() {
         audio.play().catch((e) => {
             console.log(e);
 
-            // If play fails, retry every 5 seconds
-            const retryInterval = setInterval(() => {
-                loadAndPlayAudio(audio.src);
-            }, 2000);
-
             audio.addEventListener('play', () => {
-                clearInterval(retryInterval);
                 setIsPlaying(true);
             });
 
@@ -89,24 +70,6 @@ export default function Player() {
         });
         setIsPlaying(true);
         setIsBuffering(false);
-    };
-
-    const loadAndPlayAudio = (url) => {
-        if (!data.title) return;
-        fetch(`/api/stream/${data.title.replace('&', ' ').replace('?', '') + ' ' + data.artist.replace('&', ' ').replace('?', '') + '?date=' + new Date().getTime()}`,
-            {cache: 'no-store'})
-            .then((res) => {
-                return res.json();
-            })
-            .then((json) => {
-                console.log(json);
-                audioRef.current.src = json.mp3Url.replace('http://lt2.kr/m/module/fetch_song.php?song=', '/stream/') + '?date=' + new Date().getTime();
-                handlePlay();
-            })
-            .catch((e) => {
-                console.log(e);
-                toast.error('곡 로딩에 실패했어요. 다시 시도할게요');
-            });
     };
 
     const handlePause = () => {
@@ -214,7 +177,7 @@ export default function Player() {
             <audio style={{display: 'none'}} onTimeUpdate={() => handleTimeUpdate()} ref={audioRef}
                    onEnded={() => handleEnded()} preload={'auto'} crossOrigin={'anonymous'}
                    controls></audio>
-            <BottomSheet open={isOpen} expandOnContentDrag={true} onDismiss={() => setIsOpen(false)}
+            <BottomSheet open={isOpen} expandOnContentDrag={false} onDismiss={() => setIsOpen(false)}
                          scrollLocking={true}>
                 {isLyricsMode &&
                     <Button light auto onClick={() => setIsLyricsMode(false)} style={{fontSize: '20px'}}><IonIcon
@@ -241,13 +204,16 @@ export default function Player() {
                                     fontSize: '25px',
                                     fontWeight: 'bold'
                                 }}>{data.title}</div>
-                                <div style={{opacity: 0.8, zIndex: 1}}>{data.artist}</div>
+                                <div style={{opacity: 0.8, zIndex: 1}}
+                                     onClick={() => [router.push(`/artist/${data.artistId}`), setIsOpen(false)]}>{data.artist}</div>
                             </div>
                             <Spacer y={1}/>
                             <div className='controller' ref={controllerRef}>
                                 <input type="range" max={duration} value={progress} className="progressbar"
                                        onChange={(e) => handleSeeking(e)} onMouseOut={(e) => handleSeekComplete(e)}
                                        onTouchEnd={(e) => handleSeekComplete(e)}/>
+
+                                <Spacer y={0.5}/>
                                 <div className='controller-flex'>
                                     <div className="clickable" onClick={() => handlePrev()}><IonIcon name="play-back"/>
                                     </div>

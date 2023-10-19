@@ -45,7 +45,7 @@ a {
     color: inherit !important;
 }
 
-button span svg {
+.icon-btn span svg {
     position: relative;
     top: -10px;
 }
@@ -77,4 +77,12 @@ img.fixedSize {
     height: 130px;
     object-fit: cover;
     object-position: right top;
+}
+
+.bottom-btn {
+    position: fixed !important;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px;
 }

@@ -1,11 +1,10 @@
 import {useRouter} from 'next/router';
 import {useEffect, useState} from 'react';
 import Meta from '../components/meta';
-import {Button, Spacer, Text} from '@nextui-org/react';
+import {Button, Text} from '@nextui-org/react';
 import {useRecoilState} from 'recoil';
 import {currentSongIdState, loadingState, playerState} from '../../states/states';
 import IonIcon from '@reacticons/ionicons';
-import {BottomSheet} from "react-spring-bottom-sheet";
 
 export default function AlbumDetail() {
     const router = useRouter();
@@ -16,6 +15,9 @@ export default function AlbumDetail() {
     const [player, setPlayer] = useRecoilState(playerState);
     const [currentSongId, setCurrentSongId] = useRecoilState(currentSongIdState);
     const [loading, setLoading] = useRecoilState(loadingState);
+
+    const [sortingMethod, setSortingMethod] = useState('POPULARITY');
+    const [needsReload, setNeedsReload] = useState(false);
 
     const [albumDescModalOpen, setAlbumDescModalOpen] = useState(false);
 
@@ -29,7 +31,7 @@ export default function AlbumDetail() {
 
 
     const loadData = async () => {
-        const res = await fetch(`/api/album/meta?id=${id}`);
+        const res = await fetch(`/api/artist/meta?id=${id}`);
         const data = await res.json();
         if (data.ok) {
             setAlbumData(data.data[0]);
@@ -38,12 +40,37 @@ export default function AlbumDetail() {
     };
 
     const loadTrack = async () => {
-        const res = await fetch(`/api/album/track?id=${id}`);
+        const res = await fetch(`/api/artist/track?id=${id}&sort=${sortingMethod}`);
         const data = await res.json();
         if (data.ok) {
             setTrackData(data.data);
         }
     };
+
+    const handleRecentClick = () => {
+        if (sortingMethod !== 'RECENT') {
+            setSortingMethod('RECENT');
+            setNeedsReload(true);
+        }
+    };
+
+    const handlePopularityClick = () => {
+        if (sortingMethod !== 'POPULARITY') {
+            setSortingMethod('POPULARITY');
+            setNeedsReload(true);
+        }
+    };
+
+    useEffect(() => {
+        setLoading(true);
+        if (id) {
+            loadData();
+            if (needsReload) {
+                loadTrack();
+                setNeedsReload(false); // Reset the flag
+            }
+        }
+    }, [id, sortingMethod, needsReload]);
 
     const handleItemClick = (id) => {
         setPlayer([...player, id]);
@@ -63,21 +90,16 @@ export default function AlbumDetail() {
                         lineHeight: 1,
                         background: 'linear-gradient(to top, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 0))'
                     }}>
-                        <Text h3>{albumData.title}</Text>
-                        <Text h5 style={{opacity: 0.8}}>{albumData.representationArtist}</Text>
+                        <Text h3>{albumData.name}</Text>
                         <Text h6 style={{opacity: 0.5}}>
-                            {albumData.albumTypeStr} | {albumData.genreStyle} | {albumData.releaseYmd?.substring(0, 4)}
-                            &nbsp;
-                            <span style={{float: 'right', marginTop: '-5px'}}
-                                  onClick={() => setAlbumDescModalOpen(true)}>앨범 소개<IonIcon
-                                name={'chevron-forward'}/></span>
+                            {albumData.artistGroupType} | {albumData.gender} | {albumData.artistStyle}
                         </Text>
                     </div>
                 </div>
             }
 
             <div className="app">
-                <Meta title={albumData.title}/>
+                <Meta title={albumData.name}/>
                 <Button light auto onClick={() => router.back()} style={{
                     position: 'fixed',
                     top: '20px',
@@ -86,11 +108,18 @@ export default function AlbumDetail() {
                     paddingLeft: 0
                 }}><IonIcon
                     name="chevron-back-outline"/></Button>
-                <Spacer y={1}/>
-
 
                 {trackData &&
                     <div className="result-container" style={{marginTop: '-20px'}}>
+
+                        <div style={{width: '100%', display: 'flex', justifyContent: 'flex-end', gap: '5px'}}>
+                            <span onClick={handlePopularityClick}
+                                  style={{color: sortingMethod === 'POPULARITY' ? '#7398ff' : 'inherit'}}>인기순</span>
+                            <span style={{opacity: '0.5'}}>|</span>
+                            <span onClick={handleRecentClick}
+                                  style={{color: sortingMethod === 'RECENT' ? '#7398ff' : 'inherit'}}>최신순</span>
+                        </div>
+
                         {trackData.map((item) => (
                             <div
                                 className="item track"
@@ -118,25 +147,6 @@ export default function AlbumDetail() {
                         ))}
                     </div>
                 }
-
-                <BottomSheet open={albumDescModalOpen} onDismiss={() => setAlbumDescModalOpen(false)}>
-                    <div style={{padding: '20px'}}>
-                        <Text h4>앨범 소개</Text>
-                        <Spacer y={1}/>
-                        <div
-                            style={{
-                                lineHeight: 1.5,
-                                whiteSpace: 'pre-line',
-                                height: '80dvh',
-                                overflow: 'scroll'
-                            }}>{albumData.albumDesc}</div>
-                    </div>
-
-                    <div className={'bottom-btn'}>
-                        <Button style={{width: '100%', height: '50px'}} rounded color={'white'}
-                                onClick={() => setAlbumDescModalOpen(false)}>닫기</Button>
-                    </div>
-                </BottomSheet>
 
 
                 <style jsx>{`

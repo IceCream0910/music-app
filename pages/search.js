@@ -6,8 +6,7 @@ import {Button, Grid, Spacer, Text} from '@nextui-org/react';
 import {useRecoilState} from 'recoil';
 import {currentSongIdState, loadingState, playerState} from '../states/states';
 import IonIcon from '@reacticons/ionicons';
-import {useLongPress} from 'use-long-press';
-import toast, {Toaster} from 'react-hot-toast';
+import {Toaster} from 'react-hot-toast';
 
 const SearchPage = (props) => {
     const [player, setPlayer] = useRecoilState(playerState);
@@ -15,7 +14,7 @@ const SearchPage = (props) => {
     const [currentSongId, setCurrentSongId] = useRecoilState(currentSongIdState);
 
     const router = useRouter();
-    let q = router.query.q;
+    const q = router.query.q;
 
     const [trackData, setTrackData] = useState([]);
     const [albumData, setAlbumData] = useState([]);
@@ -26,6 +25,10 @@ const SearchPage = (props) => {
 
     const [isLongPressed, setIsLongPressed] = useState(false);
     const [selectedId, setSelectedId] = useState('');
+
+    const savedTab = router.query.currentTab;
+    performance.mark('beforeRender');
+
 
     useEffect(() => {
         setLoading(true);
@@ -42,8 +45,33 @@ const SearchPage = (props) => {
         loadArtist();
     }
 
+    useEffect(() => {
+        if (savedTab !== undefined) {
+            setCurrentTab(parseInt(savedTab));
+        }
+    }, []);
+
+    useEffect(() => {
+        saveCurrentTabToQuery(currentTab);
+    }, [currentTab]);
+
+    function saveCurrentTabToQuery(currentTab) {
+        const currentUrl = router.asPath;
+        const query = {...router.query, currentTab};
+        const queryStr = Object.keys(query)
+            .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(query[key])}`)
+            .join('&');
+        router.push(`${currentUrl.split('?')[0]}?${queryStr}`, undefined, {shallow: true});
+    }
+
+    useEffect(() => {
+        if (savedTab !== undefined) {
+            setCurrentTab(parseInt(savedTab)); // 복원된 값을 정수로 파싱
+        }
+    }, [savedTab]);
+
     const loadTrack = async () => {
-        const res = await fetch(`/api/searchTrack?q=${q}`);
+        const res = await fetch(`/api/search/track?q=${q}`);
         const data = await res.json();
         if (data.ok) {
             setTrackData(data.data);
@@ -54,7 +82,7 @@ const SearchPage = (props) => {
     };
 
     const loadAlbum = async () => {
-        const res = await fetch(`/api/searchAlbum?q=${q}`);
+        const res = await fetch(`/api/search/album?q=${q}`);
         const data = await res.json();
         if (data.ok) {
             setAlbumData(data.data);
@@ -62,7 +90,7 @@ const SearchPage = (props) => {
     };
 
     const loadArtist = async () => {
-        const res = await fetch(`/api/searchArtist?q=${q}`);
+        const res = await fetch(`/api/search/artist?q=${q}`);
         const data = await res.json();
         if (data.ok) {
             setArtistData(data.data);
@@ -70,7 +98,7 @@ const SearchPage = (props) => {
     };
 
     const loadRankData = async () => {
-        const res = await fetch(`/api/searchRank`);
+        const res = await fetch(`/api/search/rank`);
         const data = await res.json();
         if (data.ok) {
             setSearchRank(data.data);
@@ -96,12 +124,6 @@ const SearchPage = (props) => {
         }
         setIsLongPressed(false);
     };
-
-    const bind = useLongPress(() => {
-        setIsLongPressed(true);
-        toast.success(`이 곡을 바로 다음에 재생할게요`);
-        setPlayer([...player, selectedId]);
-    });
 
     return (
         <div className="app">
@@ -144,11 +166,11 @@ const SearchPage = (props) => {
                                     onTouchStart={() => setSelectedId(item.id)}
                                 >
                                     <div className="imageContainer"
-                                         onClick={() => handleItemClick(item.id)} {...bind(this)}>
+                                         onClick={() => handleItemClick(item.id)}>
                                         <img className="foregroundImg" src={item.image} loading="lazy"/>
                                         <img className="backgroundImg" src={item.image} loading="lazy"/>
                                     </div>
-                                    <div className="left" onClick={() => handleItemClick(item.id)} {...bind(this)}>
+                                    <div className="left" onClick={() => handleItemClick(item.id)}>
                                         <div style={{fontWeight: 'bold', fontSize: '18px'}}>{item.title}</div>
                                         <div style={{
                                             fontWeight: 'light',
@@ -190,7 +212,8 @@ const SearchPage = (props) => {
                     <div className={'container-3x1'}>
                         {artistData.map((item) => (
                             <div className="album"
-                                 key={item.id} style={{flexDirection: 'column'}}>
+                                 key={item.id} style={{flexDirection: 'column'}}
+                                 onClick={() => router.push(`/artist/${item.id}`)}>
                                 <img className={'fixedSize'} style={{borderRadius: '20px', marginBottom: "10px"}}
                                      src={item.image}
                                      loading="lazy"/>

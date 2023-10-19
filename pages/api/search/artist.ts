@@ -6,10 +6,17 @@ export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
-    const id = req.query.id;
+    const query = req.query.q;
+    const size = req.query.size;
     const response = await axios({
         method: 'GET',
-        url: 'https://www.music-flo.com/api/meta/v1/track/' + id,
+        url: 'https://www.music-flo.com/api/search/v2/search',
+        params: {
+            keyword: query,
+            searchType: 'ARTIST',
+            sortType: 'ACCURACY',
+            size: 100,
+        },
         validateStatus: () => true,
     });
 
@@ -20,21 +27,21 @@ export default async function handler(
 
     const data = response.data;
 
-    if (!data.data) {
-        res.status(500).json({ok: false, message: '데이터를 가져올 수 없어요'});
+    if (!data.data.list[0]) {
+        res.status(404).json({ok: false, message: '검색 결과가 없어요'});
         return;
     }
 
-    const result = {
-        id: data.data.id,
-        title: data.data.name,
-        playTime: data.data.playTime,
-        artist: data.data.representationArtist.name,
-        artistId: data.data.representationArtist.id,
-        album: data.data.album.title,
-        albumId: data.data.album.id,
-        image: data.data.album.imgList.slice(-1)[0].url,
-    };
+    const list = data.data.list[0].list;
+    const result = [];
+
+    for (const item of list) {
+        result.push({
+            id: item.id,
+            name: item.name,
+            image: item.imgList[4].url,
+        });
+    }
 
     res.status(200).json({ok: true, data: result});
 }
