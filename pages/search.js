@@ -118,21 +118,17 @@ const SearchPage = (props) => {
         setLoading(false);
     };
 
-    const handleItemClick = (id) => {
-        if (!isLongPressed) {
-            if (player === null) {
-                setPlayer([id]);
-                setCurrentSongId(id);
-            } else {
-                if (player[player.length] === id) {
-                    setCurrentSongId(id);
-                    return;
-                }
-                setPlayer([...player, id]);
-                setCurrentSongId(id);
-            }
+    const handleItemClick = (item) => {
+        if (currentSongId === item.id) {
+            setCurrentSongId(item.id);
+            return;
         }
-        setIsLongPressed(false);
+        setPlayer([...player, {
+            id: item.id,
+            title: item.title,
+            artist: item.artist,
+        }]);
+        setCurrentSongId(item.id);
     };
 
     return (
