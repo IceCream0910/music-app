@@ -175,7 +175,7 @@ export default function Player() {
 
     return (
         <div>
-            <audio onTimeUpdate={() => handleTimeUpdate()} ref={audioRef}
+            <audio style={{display: 'none'}} onTimeUpdate={() => handleTimeUpdate()} ref={audioRef}
                    onEnded={() => handleEnded()} preload={'auto'} crossOrigin={'anonymous'}
                    controls></audio>
             <BottomSheet open={isOpen} expandOnContentDrag={false} onDismiss={() => setIsOpen(false)}
