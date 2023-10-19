@@ -17,6 +17,7 @@ export default function AlbumDetail() {
     const id = router.query.id;
     const [trackData, setTrackData] = useState([]);
     const [albumData, setAlbumData] = useState([]);
+    const [albumListData, setAlbumListData] = useState([]);
 
     const [player, setPlayer] = useRecoilState(playerState);
     const [currentSongId, setCurrentSongId] = useRecoilState(currentSongIdState);
@@ -24,9 +25,6 @@ export default function AlbumDetail() {
 
     const [sortingMethod, setSortingMethod] = useState('POPULARITY');
     const [needsReload, setNeedsReload] = useState(false);
-
-    const [albumDescModalOpen, setAlbumDescModalOpen] = useState(false);
-
 
     const [infoModalData, setInfoModalData] = useRecoilState(infoModalDataState);
     const [isInfoModalOpened, setIsInfoModalOpened] = useRecoilState(isInfoModalOpenedState);
@@ -36,6 +34,7 @@ export default function AlbumDetail() {
         if (id) {
             loadData();
             loadTrack();
+            loadAlbum();
         }
     }, [id]);
 
@@ -56,6 +55,15 @@ export default function AlbumDetail() {
             setTrackData(data.data);
         }
     };
+
+    const loadAlbum = async () => {
+        const res = await fetch(`/api/artist/album?id=${id}`);
+        const data = await res.json();
+        if (data.ok) {
+            setAlbumListData(data.data);
+        }
+    };
+
 
     const handleRecentClick = () => {
         if (sortingMethod !== 'RECENT') {
@@ -96,6 +104,32 @@ export default function AlbumDetail() {
         setCurrentSongId(item.id);
     };
 
+    /*
+
+                <Text h4>앨범</Text>
+                <Spacer y={1.5}/>
+                <div className="result-container" style={{marginTop: '-20px'}}>
+                    {albumListData && albumListData.map((item) => (
+                        <div className={'container-2x1'}>
+                            <div className="album"
+                                 onClick={() => router.push(`/album/${item.id}`)}
+                                 key={item.id} style={{flexDirection: 'column'}}>
+                                <img style={{borderRadius: '20px', marginBottom: "10px"}} src={item.image}
+                                     loading="lazy"/>
+                                <div className='info' style={{margin: 0}}>
+                                    <div style={{fontWeight: 'bold', fontSize: '16px'}}>{item.title}</div>
+                                    <div style={{
+                                        fontWeight: 'light',
+                                        fontSize: '13px',
+                                        opacity: 0.6
+                                    }}>{item.artist}</div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+     */
+
     return (
         <>
             {albumData &&
@@ -128,8 +162,9 @@ export default function AlbumDetail() {
                 }}><IonIcon
                     name="chevron-back-outline"/></Button>
 
+
                 {trackData &&
-                    <div className="result-container" style={{marginTop: '-20px'}}>
+                    <div className="result-container">
 
                         <div style={{width: '100%', display: 'flex', justifyContent: 'flex-end', gap: '5px'}}>
                             <span onClick={handlePopularityClick}

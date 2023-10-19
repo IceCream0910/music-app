@@ -82,7 +82,8 @@ export default function AlbumDetail() {
                         background: 'linear-gradient(to top, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 0))'
                     }}>
                         <Text h3>{albumData.title}</Text>
-                        <Text h5 style={{opacity: 0.8}}>{albumData.representationArtist}</Text>
+                        <Text h5 style={{opacity: 0.8}}
+                              onClick={() => router.push('/artist/' + albumData.artistId)}>{albumData.representationArtist}</Text>
                         <Text h6 style={{opacity: 0.5}}>
                             {albumData.albumTypeStr} | {albumData.genreStyle} | {albumData.releaseYmd?.substring(0, 4)}
                             &nbsp;

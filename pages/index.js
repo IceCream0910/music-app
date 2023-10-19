@@ -14,9 +14,12 @@ const IndexPage = () => {
     const itemsToShow = 4;
     const moreAlbums = newestAlbums.slice(itemsToShow);
 
+    const [recommendPanel, setRecommendPanel] = useState([]);
+
     useEffect(() => {
         setLoading(true);
         loadNewestAlbums();
+        loadRecommendPanel();
     }, []);
 
     const loadNewestAlbums = async () => {
@@ -28,15 +31,61 @@ const IndexPage = () => {
         setLoading(false);
     };
 
+    const loadRecommendPanel = async () => {
+        const res = await fetch(`/api/recommend`);
+        const data = await res.json();
+        if (data.ok) {
+            setRecommendPanel(data.data);
+        }
+        setLoading(false);
+    };
+
     const toggleShowMoreNewestAlbum = () => {
         setShowMoreNewestAlbum((prevShowMore) => !prevShowMore);
     };
+
+    function randomPanel(recommendPanel) {
+        if (recommendPanel.length <= 1) {
+            return recommendPanel[0]; // 배열의 크기가 1 이하면 그 요소를 반환
+        }
+
+        // 배열의 마지막 요소를 제외한 나머지 요소를 새 배열에 복사
+        const remainingItems = recommendPanel.slice(0, recommendPanel.length - 1);
+
+        // 나머지 요소 중에서 무작위로 하나를 선택
+        const randomIndex = Math.floor(Math.random() * remainingItems.length);
+        const selectedRandomItem = remainingItems[randomIndex];
+
+        return selectedRandomItem; // 무작위로 선택한 요소 반환
+    }
+
+    const displayedPanelData = randomPanel(recommendPanel);
 
     return (
         <div className="app">
             <Meta title="홈"/>
             <Text h3 weight="black">홈</Text>
-            <br></br>
+
+            <Spacer y={0.75}/>
+            {recommendPanel && displayedPanelData && (
+                <>
+                    <Text h4 weight="black"
+                          style={{
+                              position: 'absolute',
+                              top: '90px',
+                              left: '40px',
+                              right: '40px',
+                              zIndex: '9'
+                          }}>{displayedPanelData.title}</Text>
+                    <div className={'recommend-panel'}
+                         style={{backgroundImage: `url(${displayedPanelData.content.trackList[0].album.imgList[5].url})`}}>
+
+                    </div>
+                </>
+            )}
+
+
+            <Spacer y={2.5}/>
             <Text h4 weight="black">최근에 발매된 앨범</Text>
             <Spacer y={0.75}/>
             <div className={'container-2x1'}>
@@ -57,6 +106,7 @@ const IndexPage = () => {
                     </div>
                 ))}
             </div>
+
 
             {newestAlbums.length > itemsToShow && (
                 <div className="show-more-button"

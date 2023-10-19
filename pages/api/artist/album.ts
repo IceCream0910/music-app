@@ -9,7 +9,7 @@ export default async function handler(
     const id = req.query.id;
     const response = await axios({
         method: 'GET',
-        url: 'https://www.music-flo.com/api/meta/v1/album/' + id,
+        url: 'https://www.music-flo.com/api/meta/v1/artist/' + id + `/album?page=1&size=100&sortType=RECENT&roleType=RELEASE`,
         validateStatus: () => true,
     });
 
@@ -20,25 +20,24 @@ export default async function handler(
 
     const data = response.data;
 
-    if (!data.data) {
-        res.status(404).json({ok: false, message: '존재하지 않는 앨범이에요'});
+    if (!data.data.list) {
+        res.status(404).json({ok: false, message: '검색 결과가 없어요'});
         return;
     }
 
-    const item = data.data;
+    const list = data.data.list;
     const result = [];
-    result.push({
-        id: item.id,
-        agencyNm: item.agencyNm,
-        albumDesc: item.albumDesc,
-        title: item.title,
-        releaseYmd: item.releaseYmd,
-        representationArtist: item.representationArtist.name,
-        artistId: item.representationArtist.id,
-        albumTypeStr: item.albumTypeStr,
-        genreStyle: item.genreStyle,
-        image: item.imgList[4].url
-    });
+
+    for (const item of list) {
+        result.push({
+            id: item.id,
+            title: item.title,
+            releasedYmd: item.releasedYmd,
+            artist: item.representationArtist.name,
+            albumTypeStr: item.albumTypeStr,
+            image: item.imgList[4].url,
+        });
+    }
 
     res.status(200).json({ok: true, data: result});
 }

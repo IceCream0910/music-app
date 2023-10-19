@@ -113,3 +113,15 @@ img.fixedSize {
     align-items: center;
     cursor: pointer;
 }
+
+.recommend-panel {
+    width: 100%;
+    padding: 20px;
+    height: 200px;
+    box-sizing: border-box;
+    border-radius: 15px;
+    background-color: #999;
+    background-size: cover;
+    background-repeat: no-repeat;
+    filter: brightness(40%);
+}
