@@ -68,6 +68,29 @@ export default function AlbumDetail() {
         setCurrentSongId(item.id);
     };
 
+    function playAllTrack() {
+        console.log(trackData);
+        setPlayer([...player, trackData.map((item) => {
+            return {
+                id: item.id,
+                title: item.title,
+                artist: item.artist,
+            }
+        })]);
+        setCurrentSongId(trackData[0].id);
+    }
+
+    function shuffleAllTrack() {
+        setPlayer(trackData.map((item) => {
+            return {
+                id: item.id,
+                title: item.title,
+                artist: item.artist,
+            }
+        }).sort(() => Math.random() - 0.5));
+        setCurrentSongId(trackData[0].id);
+    }
+
     return (
         <>
             {albumData &&
@@ -85,18 +108,30 @@ export default function AlbumDetail() {
                         <Text h5 style={{opacity: 0.8}}
                               onClick={() => router.push('/artist/' + albumData.artistId)}>{albumData.representationArtist}</Text>
                         <Text h6 style={{opacity: 0.5}}>
-                            {albumData.albumTypeStr} | {albumData.genreStyle} | {albumData.releaseYmd?.substring(0, 4)}
+                            {albumData.albumTypeStr} | {albumData.genreStyle} | {albumData.releaseYmd?.replace(/(\d{4})(\d{2})(\d{2})/, '$1.$2.$3')}
                             &nbsp;
                             <span style={{float: 'right', marginTop: '-5px'}}
                                   onClick={() => setAlbumDescModalOpen(true)}>앨범 소개<IonIcon
                                 name={'chevron-forward'}/></span>
                         </Text>
+
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr',
+                            marginTop: '30px',
+                            gap: '15px',
+                        }}>
+                            <Button className={'icon-btn'} auto onClick={() => playAllTrack()}>
+                                <IonIcon name={'play'}/>&nbsp;&nbsp;전곡 재생</Button>
+                            <Button className={'icon-btn'} auto flat onClick={() => shuffleAllTrack()}>
+                                <IonIcon name={'shuffle'}/>&nbsp;&nbsp;셔플 재생</Button>
+                        </div>
                     </div>
                 </div>
             }
 
             <div className="app">
-                <Meta title={albumData.title}/>
+                <Meta title={albumData.title + ' 앨범 정보'}/>
                 <Button light auto onClick={() => router.back()} style={{
                     position: 'fixed',
                     top: '20px',
@@ -174,6 +209,7 @@ export default function AlbumDetail() {
                     margin-top: -40px;
                     -webkit-user-drag: none;
                     cursor: pointer;
+                    object-fit: contain;
                   }
 
                   .item {
