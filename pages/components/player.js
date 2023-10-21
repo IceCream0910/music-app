@@ -24,6 +24,25 @@ export default function Player() {
     const [isBuffering, setIsBuffering] = useState(false);
 
     let audio;
+
+    const browserPreventEvent = () => {
+        history.pushState(null, "", location.href);
+        router.push(router.asPath);
+        setIsOpen(false);
+    };
+
+    useEffect(() => {
+        history.pushState(null, "", location.href);
+        window.addEventListener("popstate", () => {
+            browserPreventEvent();
+        });
+        return () => {
+            window.removeEventListener("popstate", () => {
+                browserPreventEvent();
+            });
+        };
+    }, []);
+
     useEffect(() => {
         id = currentSongId;
         if (id) {

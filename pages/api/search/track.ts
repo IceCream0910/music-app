@@ -41,7 +41,9 @@ export default async function handler(
             title: item.name,
             playTime: item.playTime,
             artist: item.representationArtist.name,
+            artistId: item.representationArtist.id,
             album: item.album.title,
+            albumId: item.album.id,
             image: item.album.imgList[2].url,
         });
     }
